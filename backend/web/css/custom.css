@@ -1,0 +1,38 @@
+/*****************Start custom paging********************/
+#paging ul.pagination_custom{
+    list-style: none;
+    display: inline-block;
+}
+#paging ul.pagination_custom li {
+    float: left;
+}
+#paging ul.pagination_custom li a, #paging ul.pagination_custom li span{
+    font-size: 12px;
+    padding: 4px 10px !important;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #dddddd #dddddd #cccccc;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    display: inline-block;
+    line-height: 16px;
+    background: #f5f5f5;
+    color: #333333;
+    text-shadow: 0 1px 0 #ffffff;
+}
+#paging ul.pagination_custom li.active a{
+    background: #41BEDD !important;
+    color: #ffffff !important;
+}
+/*****************End custom paging********************/
+
+/*****************Start custom form*********************/
+.form-horizontal.custom-form .controls:first-child{
+    padding-left: 20px;
+}
+.form-horizontal.custom-form .controls{
+    margin-left: 0px;
+}
+.row-fluid .form-horizontal.custom-form [class*="span"]{
+    margin-left: 0px;
+}
+/*****************End custom form***********************/
