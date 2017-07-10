@@ -43,6 +43,7 @@ class FormReport extends Model
         '<t-' => 'more than days ago',
         '><t-' => 'in the past',
         't-' => 'days ago',
+        't' => 'to day',
         'ld' => 'yesterday',
         'w' => 'this week',
         'lw' => 'last week',
@@ -94,6 +95,29 @@ class FormReport extends Model
             'cb_hours' => 'Hours'
         ];
     }
+    public function setAttributes($values, $safeOnly = true)
+    {
+        parent::setAttributes($values, $safeOnly);
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function safeAttributes()
+    {
+        $safe = parent::safeAttributes();
+        return array_merge($safe, $this->extraFields());
+    }
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        return ['check_spent_on', 'spent_on' , 'values_spent_on_1', 'values_spent_on_2', 'values_spent_on',
+            'cb_user_id', 'filter_user_id', 'user_id', 'cb_activity_id', 'filter_activity_id', 'activity_id',
+            'cb_comments', 'filter_cb_comments', 'comments', 'cb_hours', 'filter_cb_hours', 'hours', 'values_hours_1', 'values_hours_2'];
+        
+    }
     
     /*
      * Get list user by project
@@ -129,11 +153,38 @@ class FormReport extends Model
         return $result;
     }
     
-    /*
-     * Get Activity filter
-     * 
-     * Auth : Hiennv6244
-     * Created : 10-07-2017
-     */
+    public function isShowSpentOn1() {
+        if ($this->check_spent_on == 0 || ($this->check_spent_on == 1 && !in_array($this->spent_on, ['=', '>=', '<=', '><']))) {
+            return false;
+        }
+        return true;
+    }
     
+    public function isShowSpentOn2() {
+        if ($this->check_spent_on == 0 || ($this->check_spent_on == 1 && $this->spent_on != '><')) {
+            return false;
+        }
+        return true;
+    }
+    
+    public function isShowSpentOn() {
+        if ($this->check_spent_on == 0 || ($this->check_spent_on == 1 && !in_array($this->spent_on, ['>t-', '<t-', '><t-', 't-']))) {
+            return false;
+        }
+        return true;
+    }
+    
+    public function isShowHours1() {
+        if ($this->cb_hours == 0 || ($this->cb_hours == 1 && !in_array($this->filter_cb_hours, ['=', '>=', '<=', '><']))) {
+            return false;
+        }
+        return true;
+    }
+    
+    public function isShowHours2() {
+        if ($this->cb_hours == 0 || ($this->cb_hours == 1 && $this->filter_cb_hours != '><')) {
+            return false;
+        }
+        return true;
+    }
 }

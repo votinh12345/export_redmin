@@ -6,7 +6,12 @@ use yii\widgets\ActiveForm;
 use backend\models\FormReport;
 
 $this->title = 'Detail report';
-$flagShowDate = $flagShowUser = $flagShowActivity = $flagShowComment = $flagShowHours = false;
+$flagShowDate = $flagShowUser = $flagShowActivity = $flagShowComment = $flagShowHours = 0;
+$flagShowSpentOn1 = $formModelReport->isShowSpentOn1();
+$flagShowSpentOn2 = $formModelReport->isShowSpentOn2();
+$flagShowSpentOn = $formModelReport->isShowSpentOn();
+$flagShowHours1 = $formModelReport->isShowHours1();
+$flagShowHours2 = $formModelReport->isShowHours2();
 if ($formModelReport->spent_on == '*') {
     $flagShowDate = true;
 }
@@ -47,22 +52,22 @@ if ($formModelReport->filter_cb_hours == '*') {
                         <div class="controls span2">
                             <?= $form->field($formModelReport, 'check_spent_on', ['template' => "{input}",])->checkbox()->label('Date'); ?>
                         </div>
-                        <div class="controls span4">
+                        <div class="controls span4" id="filter_date" style="<?= ($formModelReport->check_spent_on == 0) ? 'display:none;' : ''?>">
                             <?= Html::activeDropDownList($formModelReport, 'spent_on', FormReport::$FILTER_DATE, []); ?>
                         </div>
-                        <div class="controls span6">
-                            <span style="margin-right: 20px; <?= ($flagShowDate) ? 'display:none;' : ''?>">
+                        <div class="controls span6" id="values_filter_date">
+                            <span id="values_spent_on_1" style="margin-right: 20px; <?= (!$flagShowSpentOn1) ? 'display:none;' : ''?>">
                                 <div  data-date="<?= date('m-d-Y')?>" class="input-append date datepicker">
                                     <?= Html::activeTextInput($formModelReport, 'values_spent_on_1', ['class' => 'span11', 'data-date-format' => 'mm-dd-yyyy']); ?>
                                 <span class="add-on"><i class="icon-th"></i></span> </div>
                             </span>
-                            <span style="margin-right: 20px; <?= ($flagShowDate) ? 'display:none;' : ''?>">
+                            <span id="values_spent_on_2" style="margin-right: 20px; <?= (!$flagShowSpentOn2) ? 'display:none;' : ''?>">
                                 <div  data-date="<?= date('m-d-Y')?>" class="input-append date datepicker">
                                     <?= Html::activeTextInput($formModelReport, 'values_spent_on_2', ['class' => 'span11', 'data-date-format' => 'mm-dd-yyyy']); ?>
                                 <span class="add-on"><i class="icon-th"></i></span> </div>
                             </span>
-                            <span style="<?= ($flagShowDate) ? 'display:none;' : ''?>">
-                                <?= Html::activeTextInput($formModelReport, 'values_spent_on', ['class' => 'span2']); ?>
+                            <span id="values_spent_on" style="<?= (!$flagShowSpentOn) ? 'display:none;' : ''?>">
+                                <?= Html::activeTextInput($formModelReport, 'values_spent_on', ['class' => 'span6']); ?>
                                 <span class="add-on">days</span> 
                             </span>
                         </div>
@@ -72,10 +77,10 @@ if ($formModelReport->filter_cb_hours == '*') {
                         <div class="controls span2">
                             <?= $form->field($formModelReport, 'cb_user_id', ['template' => "{input}",])->checkbox()->label('User'); ?>
                         </div>
-                        <div class="controls span4">
+                        <div class="controls span4" id="filter_user_id" style="<?= (!$formModelReport->cb_user_id) ? 'display:none' : ''?>">
                             <?= Html::activeDropDownList($formModelReport, 'filter_user_id', FormReport::$FILTER_USER, []); ?>
                         </div>
-                        <div class="controls span6">
+                        <div class="controls span6" id="user_id" style="<?= (!$formModelReport->cb_user_id) ? 'display:none' : ''?>">
                             <?= Html::activeDropDownList($formModelReport, 'user_id', $listUserByProject, ['multiple' => 'multiple', 'class' => 'span10']); ?>
                         </div>
                     </div>
@@ -84,10 +89,10 @@ if ($formModelReport->filter_cb_hours == '*') {
                         <div class="controls span2">
                             <?= $form->field($formModelReport, 'cb_activity_id', ['template' => "{input}",])->checkbox()->label('Activity'); ?>
                         </div>
-                        <div class="controls span4">
+                        <div class="controls span4" id="filter_activity_id" style="<?= (!$formModelReport->cb_activity_id) ? 'display:none' : ''?>">
                             <?= Html::activeDropDownList($formModelReport, 'filter_activity_id', FormReport::$FILTER_ACTIVITY, []); ?>
                         </div>
-                        <div class="controls span6">
+                        <div class="controls span6" id="value_activity_id" style="<?= (!$formModelReport->cb_activity_id) ? 'display:none' : ''?>">
                             <?= Html::activeDropDownList($formModelReport, 'activity_id', $listActivity, ['multiple' => 'multiple', 'class' => 'span10']); ?>
                         </div>
                     </div>
@@ -96,10 +101,10 @@ if ($formModelReport->filter_cb_hours == '*') {
                         <div class="controls span2">
                             <?= $form->field($formModelReport, 'cb_comments', ['template' => "{input}",])->checkbox()->label('Comment'); ?>
                         </div>
-                        <div class="controls span4">
+                        <div class="controls span4" id="filter_cb_comments" style="<?= (!$formModelReport->cb_comments) ? 'display:none' : ''?>">
                             <?= Html::activeDropDownList($formModelReport, 'filter_cb_comments', FormReport::$FILTER_COMMENT, []); ?>
                         </div>
-                        <div class="controls span6">
+                        <div class="controls span6" id="value_comments" style="<?= (!$formModelReport->cb_comments) ? 'display:none' : ''?>">
                             <?= Html::activeTextInput($formModelReport, 'comments', ['class' => 'span6']); ?>
                         </div>
                     </div>
@@ -108,15 +113,15 @@ if ($formModelReport->filter_cb_hours == '*') {
                         <div class="controls span2">
                             <?= $form->field($formModelReport, 'cb_hours', ['template' => "{input}",])->checkbox()->label('Hours'); ?>
                         </div>
-                        <div class="controls span4">
+                        <div class="controls span4" id="filter_cb_hours" style="<?= (!$formModelReport->cb_hours) ? 'display:none' : ''?>">
                             <?= Html::activeDropDownList($formModelReport, 'filter_cb_hours', FormReport::$FILTER_HOURS, []); ?>
                         </div>
-                        <div class="controls span6">
-                            <span style="margin-right: 20px; <?= ($flagShowHours) ? 'display:none;' : ''?>">
-                                <?= Html::activeTextInput($formModelReport, 'values_hours_1', ['class' => 'span2']); ?>
+                        <div class="controls span6" id="values_hours" style="<?= (!$formModelReport->cb_hours) ? 'display:none' : ''?>">
+                            <span id="values_hours_1" style="margin-right: 20px; <?= (!$flagShowHours1) ? 'display:none;' : ''?>">
+                                <?= Html::activeTextInput($formModelReport, 'values_hours_1', ['class' => 'span4']); ?>
                             </span>
-                            <span style="margin-right: 20px; <?= ($flagShowHours) ? 'display:none;' : ''?>">
-                                <?= Html::activeTextInput($formModelReport, 'values_hours_2', ['class' => 'span2']); ?>
+                            <span id="values_hours_2" style="margin-right: 20px; <?= (!$flagShowHours2) ? 'display:none;' : ''?>">
+                                <?= Html::activeTextInput($formModelReport, 'values_hours_2', ['class' => 'span4']); ?>
                             </span>
                         </div>
                     </div>
