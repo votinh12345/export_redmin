@@ -204,8 +204,49 @@ class FormReport extends Model
         $query->join('INNER JOIN', 'users', 'users.id = time_entries.user_id');
         $query->join('INNER JOIN', 'issues', 'issues.id = time_entries.issue_id');
         $query->join('INNER JOIN', 'enumerations', 'enumerations.id = time_entries.activity_id');
-        
         $query->andFilterWhere(['=', 'time_entries.project_id' , $projectId]);
+        if ($this->check_spent_on == 1) {
+            switch ($this->spent_on) {
+                case '=':
+                    $query->andFilterWhere(['=', 'time_entries.spent_on' , $this->values_spent_on_1]);
+                    break;
+                case '>=':
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $this->values_spent_on_1]);
+                    break;
+                case '<=':
+                    $query->andFilterWhere(['<=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $this->values_spent_on_1]);
+                    break;
+                case '><':
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $this->values_spent_on_1]);
+                    $query->andFilterWhere(['<=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $this->values_spent_on_2]);
+                    break;
+                case '>t-':
+                    //$query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime("-".$this->values_spent_on." day"))]);
+                    break;
+                case '<t-':
+                    //$query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime("-".$this->values_spent_on." day"))]);
+                    break;
+                case '><t-':
+                    //$query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime("-".$this->values_spent_on." day"))]);
+                    break;
+                case 't-':
+                    //$query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime("-".$this->values_spent_on." day"))]);
+                    break;
+                case 't':
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime(date("Y-m-d H:i:s")))]);
+                    break;
+                case 'ld':
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime('-1 day'))]);
+                    break;
+                case 'w':
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime('-1 day'))]);
+                    break;
+                default:
+                    break;
+            }
+        }
+//        var_dump($this->check_spent_on);die;
+        
         
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

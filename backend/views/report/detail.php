@@ -31,7 +31,8 @@ if ($formModelReport->filter_cb_hours == '*') {
     })
     //Date picker
     $('#formreport-values_spent_on_1, #formreport-values_spent_on_2').datepicker({
-      autoclose: true
+      autoclose: true,
+      format: 'yyyy-mm-dd',
     })
     //Initialize Select2 Elements
     $('.select2').select2()
