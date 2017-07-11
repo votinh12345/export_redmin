@@ -35,4 +35,7 @@
 .row-fluid .form-horizontal.custom-form [class*="span"]{
     margin-left: 0px;
 }
+.custom-form div.col-md-2:first-child{
+    padding-left: 30px;
+}
 /*****************End custom form***********************/

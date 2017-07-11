@@ -84,16 +84,20 @@ class ReportController extends Controller
         } else {
             $formModelReport->setAttributes($param['FormReport']);
         }
-//        var_dump($formModelReport->check_spent_on);die;
+        
         //get list filter
         $listUserByProject = $formModelReport->listUserByProject($ProjectsItem->id);
         $listActivity = $modelEnumerations->getListActitivty();
+        
+        $dataProvider = $formModelReport->getAllDataDetail($id);
         
         return $this->render('detail', [
             'formModelReport' => $formModelReport,
             'listUserByProject' => $listUserByProject,
             'projectsItem' => $ProjectsItem,
-            'listActivity' => $listActivity
+            'listActivity' => $listActivity,
+            'dataProvider' => $dataProvider
         ]);
     }
+    
 }

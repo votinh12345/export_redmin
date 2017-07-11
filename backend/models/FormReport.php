@@ -2,6 +2,9 @@
 namespace backend\models;
 
 use Yii;
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+use yii\data\ActiveDataProvider;
 use yii\base\Model;
 use common\models\Members;
 use common\models\Enumerations;
@@ -186,5 +189,40 @@ class FormReport extends Model
             return false;
         }
         return true;
+    }
+    
+    /*
+     * Get all data detail
+     * 
+     * Auth : HienNV6244
+     * Created : 11-07-2017
+     */
+    public function getAllDataDetail($projectId) {
+        $query = new \yii\db\Query();
+        $query->select(['time_entries.*', 'users.firstname', 'users.lastname', 'enumerations.name as name_activity', 'issues.subject'])
+                ->from('time_entries');
+        $query->join('INNER JOIN', 'users', 'users.id = time_entries.user_id');
+        $query->join('INNER JOIN', 'issues', 'issues.id = time_entries.issue_id');
+        $query->join('INNER JOIN', 'enumerations', 'enumerations.id = time_entries.activity_id');
+        
+        $query->andFilterWhere(['=', 'time_entries.project_id' , $projectId]);
+        
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => Yii::$app->params['pageSize']
+            ],
+            'sort' => [
+                'defaultOrder' => [
+                    'spent_on' => SORT_DESC
+                ]
+            ],
+        ]);
+        
+        $dataProvider->sort->attributes['spent_on'] = [
+            'desc' => ['time_entries.spent_on' => SORT_DESC],
+            'asc' => ['time_entries.spent_on' => SORT_ASC],
+        ];
+        return $dataProvider;
     }
 }

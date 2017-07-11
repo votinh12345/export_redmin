@@ -9,8 +9,11 @@
     RewriteRule ^backend/css/(.*)$ backend/web/css/$1 [L]
     RewriteRule ^backend/js/(.*)$ backend/web/js/$1 [L]
     RewriteRule ^backend/img/(.*)$ backend/web/img/$1 [L]
-    RewriteRule ^backend/font-awesome/(.*)$ backend/web/font-awesome/$1 [L]   
-    RewriteCond %{REQUEST_URI} !^/backend/web/(assets|js|css|js|img|font-awesome)/
+    RewriteRule ^backend/font-awesome/(.*)$ backend/web/font-awesome/$1 [L]
+    RewriteRule ^backend/bower_components/(.*)$ backend/web/bower_components/$1 [L]
+    RewriteRule ^backend/dist/(.*)$ backend/web/dist/$1 [L]
+    RewriteRule ^backend/plugins/(.*)$ backend/web/plugins/$1 [L]
+    RewriteCond %{REQUEST_URI} !^/backend/web/(assets|js|css|js|img|font-awesome|bower_components|dist|plugins)/
     RewriteCond %{REQUEST_URI} ^/(backend)
     RewriteRule ^.*$ backend/web/index.php [L]
     RewriteCond %{REQUEST_URI} ^/(assets|css|js|images)

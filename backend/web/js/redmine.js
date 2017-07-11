@@ -11,6 +11,7 @@ $(document).ready(function(){
     $('#formreport-check_spent_on').change(function() {
         if ($(this).is(':checked')) {
             $('#filter_date').css('display', 'inline-block');
+            $('#formreport-spent_on').removeAttr('disabled');
             var filter_date = $("#formreport-spent_on option:selected" ).val();
             show_hidden_date(filter_date);
         } else {
@@ -103,6 +104,7 @@ $(document).ready(function(){
         if ($(this).is(':checked')) {
             $('#filter_user_id').css('display', 'inline-block');
             $('#user_id').css('display', 'inline-block');
+            $('#formreport-filter_user_id').removeAttr('disabled');
             var filter_user = $("#formreport-filter_user_id option:selected" ).val();
             show_hidde_user(filter_user);
         } else {
@@ -153,6 +155,7 @@ $(document).ready(function(){
         if ($(this).is(':checked')) {
             $('#filter_cb_comments').css('display', 'inline-block');
             $('#value_comments').css('display', 'inline-block');
+            $('#formreport-filter_cb_comments').removeAttr('disabled');
             var filter_comments = $("#formreport-filter_cb_comments option:selected" ).val();
             show_hidde_comments(filter_comments);
         } else {
@@ -203,6 +206,7 @@ $(document).ready(function(){
         if ($(this).is(':checked')) {
             $('#filter_cb_hours').css('display', 'inline-block');
             $('#values_hours').css('display', 'inline-block');
+            $('#formreport-filter_cb_hours').removeAttr('disabled');
             var filter_hours = $("#formreport-filter_cb_hours option:selected" ).val();
             show_hidde_hours(filter_hours);
         } else {

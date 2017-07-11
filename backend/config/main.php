@@ -50,6 +50,9 @@ return [
         ],
         'request' => [
             'baseUrl' => '/backend',
+            'enableCookieValidation' => true,
+            'enableCsrfValidation' => true,
+            'cookieValidationKey' => 'xxxxxxx',
         ],
     ],
     'params' => $params,

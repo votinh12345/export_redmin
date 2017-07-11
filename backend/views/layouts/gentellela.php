@@ -23,51 +23,32 @@ AppAsset::register($this);
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?= Html::encode($this->title) ?></title>
-        
-        <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,800' rel='stylesheet' type='text/css'>
+        <script src="<?= Url::base(); ?>/bower_components/jquery/dist/jquery.min.js"></script>
+        <link rel="stylesheet" href="<?= Url::base(); ?>/css/font-google.css">
         <?php $this->head() ?>
     </head>
-    <body>
-        <?php $this->beginBody() ?>
-        <!--Header-part-->
-        <div id="header">
-            <h1><a href="<?= Url::to(['/']); ?>">Matrix Admin</a></h1>
+    <body class="hold-transition skin-blue sidebar-mini" >
+        <div class="wrapper">
+            <?php $this->beginBody(); ?>
+            <!--Header-part-->
+            <?= $this->render('items/header.php');?>
+            <!--close-Header-part-->
+            
+            <!-- Left side column. contains the logo and sidebar -->
+            <?= $this->render('items/left_menu.php');?>
+            <!-- End Left side column. contains the logo and sidebar -->
+            
+            <!-- Content Wrapper. Contains page content -->
+            <div class="content-wrapper">
+                <!--Content-->
+                <?= $content ?>
+                <!--End-content-->
+            </div>
+            
+            <!-- /.content-wrapper -->
+            <?= $this->render('items/footer.php');?>
+            <!--end-Footer-part-->
         </div>
-        <!--close-Header-part-->
-        <!--top-Header-menu-->
-        <div id="user-nav" class="navbar navbar-inverse">
-            <ul class="nav">
-                <li  class="dropdown" id="profile-messages" ><a title="" href="javascript:void(0)" data-toggle="dropdown" data-target="#profile-messages" class="dropdown-toggle"><i class="icon icon-user"></i>  <span class="text">Welcome Admin</span><b class="caret"></b></a></li>
-                <li class=""><a href="javascript:void(0)"><i class="icon icon-share-alt"></i> <span class="text">Logout</span></a></li>
-            </ul>
-        </div>
-        <!--close-top-Header-menu-->
-
-        <!--sidebar-menu-->
-        <div id="sidebar"><a href="<?= Url::to(['/']); ?>" class="visible-phone"><i class="icon icon-home"></i> Dashboard</a>
-            <ul>
-                <li class="<?= (Yii::$app->controller->id == 'site') ? 'active' : '';?>"><a href="<?= Url::to(['/']); ?>"><i class="icon icon-home"></i> <span>Dashboard</span></a> </li>
-                <li class="<?= (Yii::$app->controller->id == 'report') ? 'active' : '';?>"> <a href="charts.html"><i class="icon icon-signal"></i> <span>Report</span></a> </li>
-                <li> <a href="widgets.html"><i class="icon icon-inbox"></i> <span>Export Excel With CSV</span></a> </li>
-            </ul>
-        </div>
-        <!--sidebar-menu-->
-        
-        <!--main-container-part-->
-        <div id="content">
-          <!--Content-->
-          <?= $content ?>
-          <!--End-content-->
-        </div>
-        <!--end-main-container-part-->
-        
-        <!--Footer-part-->
-
-        <div class="row-fluid">
-          <div id="footer" class="span12"> 2017 &copy; Matrix Admin. Brought to you by <a href="http://themedesigner.in">Themedesigner.in</a> </div>
-        </div>
-
-        <!--end-Footer-part-->
         <?php $this->endBody() ?>
     </body>
 </html>

@@ -5,30 +5,30 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\widgets\Pjax;
 use yii\web\Session;
-
 $this->title = 'List Project';
 ?>
-<!--breadcrumbs-->
-<div id="content-header">
-    <div id="breadcrumb">
-      <a href="index.html" title="Go to Home" class="tip-bottom"><i class="icon-home"></i> Home</a>
-      <a href="#" class="tip-bottom">List Project</a>
-    </div>
-    <h1>List Project</h1>
-</div>
-<!--End-breadcrumbs-->
-<div class="container-fluid">
-    <hr>
-    <div class="row-fluid">
-        <div class="span12">
-            <div class="widget-box">
-                <div class="widget-title"> <span class="icon"> <i class="icon-align-justify"></i> </span>
-                    <h5>List Project</h5>
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>
+        List Project
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="<?= Url::to(['/']); ?>"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">List Project</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">List Project</h3>
                 </div>
-                
-                <div class="widget-content nopadding">
-                    <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper" role="grid">
-                        <?php ActiveForm::begin(['options' => ['id' => 'form']]); ?>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <?php ActiveForm::begin(['options' => ['id' => 'form']]); ?>
                         <?php if ($dataProvider->getTotalCount() == 0) : ?>
                             <p class="txtWarning"><span class="iconNo">Data does not exist</span></p>
                         <?php else : ?>
@@ -37,10 +37,9 @@ $this->title = 'List Project';
                             <?=
                                 GridView::widget([
                                     'dataProvider' => $dataProvider,
-                                    'layout' => '{items}<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix">'
-                                    . '<div id="paging" class="dataTables_paginate fg-buttonset ui-buttonset fg-buttonset-multi ui-buttonset-multi paging_full_numbers">{pager}</div></div>',
-                                    'summary' => '<div class="pageList_data"><strong>ALL {totalCount} Item {begin} ～ {end}</strong>'
-                                    . '</div><div class="pageList_del"><div class="pageList_del_item"></div></div>',
+                                    'layout' => '<div class="dataTables_wrapper form-inline dt-bootstrap">{items}<div class="col-sm-5">{summary}</div>'
+                                    . '<div class="col-sm-7"><div class="dataTables_paginate paging_simple_numbers">{pager}</div></div></div>',
+                                    'summary' => '<div class="dataTables_info">ALL {totalCount} Item {begin} ～ {end}</div>',
                                     'rowOptions'   => function ($model, $index, $widget, $grid) {
                                         if ($index % 2 == 0) {
                                                 return [
@@ -103,14 +102,14 @@ $this->title = 'List Project';
                                             }
                                         ],
                                     ],
-                                    'tableOptions' => ['class' => 'table table-bordered table-striped'],
+                                    'tableOptions' => ['class' => 'table table-bordered table-hover'],
                                     'pager' => [
                                         'prevPageLabel' => 'Prev',
                                         'nextPageLabel' => 'Next',
                                         'activePageCssClass' => 'paginate_button active',
                                         'disabledPageCssClass' => 'paginate_button previous disabled',
                                         'options' => [
-                                            'class' => 'pagination_custom',
+                                            'class' => 'pagination',
                                             'id' => 'pager-container',
                                         ],
                                     ],
@@ -119,9 +118,11 @@ $this->title = 'List Project';
                             <?php Pjax::end(); ?>
                         <?php endif; ?>
                     <?php ActiveForm::end(); ?>
-                    </div>
                 </div>
+                
             </div>
         </div>
     </div>
-</div>
+</section>
+
+
