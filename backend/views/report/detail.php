@@ -15,6 +15,8 @@ $flagShowSpentOn2 = $formModelReport->isShowSpentOn2();
 $flagShowSpentOn = $formModelReport->isShowSpentOn();
 $flagShowHours1 = $formModelReport->isShowHours1();
 $flagShowHours2 = $formModelReport->isShowHours2();
+$flagShowButtonExportByMember = $formModelReport->isShowButtonExportByMember();
+$flagShowButtonReportMonth = $formModelReport->isShowButtonExportReportMonth();
 if ($formModelReport->spent_on == '*') {
     $flagShowDate = true;
 }
@@ -145,10 +147,10 @@ if ($formModelReport->filter_cb_hours == '*') {
                             <?= Html::activeDropDownList($formModelReport, 'filter_cb_hours', FormReport::$FILTER_HOURS, ['class' => 'form-control']); ?>
                         </div>
                         <div class="col-md-6" id="values_hours" style="<?= (!$formModelReport->cb_hours) ? 'display:none' : '' ?>">
-                            <span id="values_hours_1" style="margin-right: 20px; <?= (!$flagShowHours1) ? 'display:none;' : '' ?>">
+                            <span id="values_hours_1" class="col-md-5" style="margin-right: 20px; <?= (!$flagShowHours1) ? 'display:none;' : '' ?>">
                                 <?= Html::activeTextInput($formModelReport, 'values_hours_1', ['class' => 'form-control']); ?>
                             </span>
-                            <span id="values_hours_2" style="margin-right: 20px; <?= (!$flagShowHours2) ? 'display:none;' : '' ?>">
+                            <span id="values_hours_2" class="col-md-5" style="margin-right: 20px; <?= (!$flagShowHours2) ? 'display:none;' : '' ?>">
                                 <?= Html::activeTextInput($formModelReport, 'values_hours_2', ['class' => 'form-control']); ?>
                             </span>
                         </div>
@@ -165,17 +167,21 @@ if ($formModelReport->filter_cb_hours == '*') {
             <div class="row">
                 <div class="col-md-12">
                     <!-- Custom Tabs -->
+                    <?php ActiveForm::begin(['options' => ['id' => 'form']]); ?>
                     <div class="nav-tabs-custom">
                         <ul class="nav nav-tabs">
                             <li class="active"><a href="#tab_1" data-toggle="tab">Detail</a></li>
                             <li><a href="#tab_2" data-toggle="tab">Report</a></li>
+                            <ul style="float:right" class="custom-report">
+                                <?php if ($flagShowButtonExportByMember) : ?><li><input type="submit" class="btn bg-olive btn-flat margin" name="export-member" value=" Export Report Member"></li> <?php endif;?>
+                                <?php if ($flagShowButtonReportMonth) : ?><li><input type="submit" class="btn bg-olive btn-flat margin" name="export-month" value="Export Report Month"></li><?php endif;?>
+                            </ul>
                         </ul>
                         <div class="tab-content">
                             <div class="tab-pane active" id="tab_1">
                                 <?php if ($dataProvider->getTotalCount() == 0) : ?>
                                 <p class="txtWarning"><span class="iconNo">Data does not exist</span></p>
                                 <?php else : ?>
-
                                     <?php Pjax::begin(); ?>
                                     <?=
                                     GridView::widget([
@@ -252,6 +258,7 @@ if ($formModelReport->filter_cb_hours == '*') {
                         </div>
                       <!-- /.tab-content -->
                     </div>
+                    <?php ActiveForm::end(); ?>
                 </div>
             </div>
             

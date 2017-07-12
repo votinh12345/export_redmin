@@ -8,13 +8,14 @@ use yii\data\ActiveDataProvider;
 use yii\base\Model;
 use common\models\Members;
 use common\models\Enumerations;
+use common\components\Utility;
 
 /**
  * Login form
  */
 class FormReport extends Model
 {
-    
+    public $project_id;
     public $check_spent_on;
     public $spent_on;
     public $values_spent_on_1;
@@ -51,17 +52,17 @@ class FormReport extends Model
         'w' => 'this week',
         'lw' => 'last week',
         'l2w' => 'last 2 weeks',
-        'w' => 'this month',
-        'm' => 'last month',
+        'm' => 'this month',
+        'lm' => 'last month',
         'y' => 'this year',
-        '!*' => 'none',
+//        '!*' => 'none',
         '*' => 'any',
     ];
     
     public static $FILTER_USER = [
         '=' => 'is',
         '!' => 'is not',
-        '!*' => 'none',
+//        '!*' => 'none',
         '*' => 'any',
     ];
     
@@ -73,7 +74,7 @@ class FormReport extends Model
     public static $FILTER_COMMENT = [
         '~' => 'contains',
         '!~' => 'doesn`t contain',
-        '!*' => 'none',
+//        '!*' => 'none',
         '*' => 'any',
     ];
     
@@ -82,7 +83,7 @@ class FormReport extends Model
         '>=' => '>=',
         '<=' => '<=',
         '><' => 'between',
-        '!*' => 'none',
+//        '!*' => 'none',
         '*' => 'any',
     ];
     /**
@@ -95,7 +96,8 @@ class FormReport extends Model
             'cb_user_id' => 'User',
             'cb_activity_id' => 'Activity',
             'cb_comments' => 'Comment',
-            'cb_hours' => 'Hours'
+            'cb_hours' => 'Hours',
+            'project_id' => 'Project Id'
         ];
     }
     public function setAttributes($values, $safeOnly = true)
@@ -118,7 +120,8 @@ class FormReport extends Model
     {
         return ['check_spent_on', 'spent_on' , 'values_spent_on_1', 'values_spent_on_2', 'values_spent_on',
             'cb_user_id', 'filter_user_id', 'user_id', 'cb_activity_id', 'filter_activity_id', 'activity_id',
-            'cb_comments', 'filter_cb_comments', 'comments', 'cb_hours', 'filter_cb_hours', 'hours', 'values_hours_1', 'values_hours_2'];
+            'cb_comments', 'filter_cb_comments', 'comments', 'cb_hours', 'filter_cb_hours', 'hours', 'values_hours_1',
+            'values_hours_2', 'project_id'];
         
     }
     
@@ -192,6 +195,89 @@ class FormReport extends Model
     }
     
     /*
+     * Check show button export excel by member
+     * 
+     * Auth : HienNv6244
+     * Created : 12-07-2017
+     */
+    public function isShowButtonExportByMember() {
+        $flagShow = false;
+        if ($this->check_spent_on == 1) {
+            switch ($this->spent_on) {
+                case '><':
+                    $month1 = date("m",strtotime($this->values_spent_on_1));
+                    $month2 = date("m",strtotime($this->values_spent_on_2));
+                    if ($month1 == $month2) {
+                        $flagShow = true;
+                    }
+                    break;
+                case 'w':
+                    $date = Utility::getDate($this->spent_on);
+                    $flagShow = $this->checkDateTwoDay($date);
+                    break;
+                case 'lw':
+                    $date = Utility::getDate($this->spent_on);
+                    $flagShow = $this->checkDateTwoDay($date);
+                    break;
+                case 'l2w':
+                    $date = Utility::getDate($this->spent_on);
+                    $flagShow = $this->checkDateTwoDay($date);
+                    break;
+                case 'm':
+                    $flagShow = true;
+                    break;
+                case 'lm':
+                    $flagShow = true;
+                    break;
+                default :
+                    break;
+            }
+        }
+        
+        return $flagShow;
+    }
+
+    /*
+     * Check show button export excel report month
+     * 
+     * Auth : HienNv6244
+     * Created : 12-07-2017
+     */
+    public function isShowButtonExportReportMonth() {
+        $flagShow = false;
+        if ($this->check_spent_on == 1) {
+            switch ($this->spent_on) {
+                case '><':
+                    $month1 = date("m",strtotime($this->values_spent_on_1));
+                    $month2 = date("m",strtotime($this->values_spent_on_2));
+                    if ($month1 == $month2) {
+                        $flagShow = true;
+                    }
+                    break;
+                case 'm':
+                    $flagShow = true;
+                    break;
+                case 'lm':
+                    $flagShow = true;
+                    break;
+                default :
+                    break;
+            }
+        }
+        
+        return $flagShow;
+    }
+    
+    public function checkDateTwoDay($date) {
+        $flagShow = false;
+        $month1 = date("m",strtotime($date['firstDate']));
+        $month2 = date("m",strtotime($date['lastDate']));
+        if ($month1 == $month2) {
+            $flagShow = true;
+        }
+        return $flagShow;
+    }
+    /*
      * Get all data detail
      * 
      * Auth : HienNV6244
@@ -239,14 +325,98 @@ class FormReport extends Model
                     $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime('-1 day'))]);
                     break;
                 case 'w':
-                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , date('Y-m-d', strtotime('-1 day'))]);
+                    $date = Utility::getDate($this->spent_on);
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['firstDate']]);
+                    $query->andFilterWhere(['<=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['lastDate']]);
+                    break;
+                case 'lw':
+                    $date = Utility::getDate($this->spent_on);
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['firstDate']]);
+                    $query->andFilterWhere(['<=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['lastDate']]);
+                    break;
+                case 'l2w':
+                    $date = Utility::getDate($this->spent_on);
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['firstDate']]);
+                    $query->andFilterWhere(['<=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['lastDate']]);
+                    break;
+                case 'm':
+                    $date = Utility::getDate($this->spent_on);
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['firstDate']]);
+                    $query->andFilterWhere(['<=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['lastDate']]);
+                    break;
+                case 'lm':
+                    $date = Utility::getDate($this->spent_on);
+                    $query->andFilterWhere(['>=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['firstDate']]);
+                    $query->andFilterWhere(['<=', 'DATE_FORMAT(time_entries.spent_on,"%Y-%m-%d")' , $date['lastDate']]);
+                    break;
+                case '!*':
+                    
                     break;
                 default:
                     break;
             }
         }
-//        var_dump($this->check_spent_on);die;
+        //add filter for user
+        if ($this->cb_user_id == 1) {
+            switch ($this->filter_user_id) {
+                case '=':
+                    $query->andFilterWhere(['IN', 'users.id' , $this->user_id]);
+                    break;
+                case '!':
+                    $query->andFilterWhere(['NOT IN', 'users.id' , $this->user_id]);
+                    break;
+                default :
+                    break;
+            }
+        }
+        //add filter for activity
+        if ($this->cb_activity_id == 1) {
+            switch ($this->filter_activity_id) {
+                case '=':
+                    $query->andFilterWhere(['IN', 'time_entries.activity_id' , $this->activity_id]);
+                    break;
+                case '!':
+                    $query->andFilterWhere(['NOT IN', 'time_entries.activity_id' , $this->activity_id]);
+                    break;
+                default :
+                    break;
+            }
+        }
         
+        //add filter for Comment
+        if ($this->cb_comments == 1) {
+            switch ($this->filter_cb_comments) {
+                case '~':
+                    $query->andFilterWhere(['LIKE', 'time_entries.comments' , $this->comments]);
+                    break;
+                case '!~':
+                    $query->andFilterWhere(['OR LIKE', 'time_entries.comments' , $this->comments]);
+                    break;
+                default :
+                    break;
+            }
+        }
+        
+        //add filter for hours
+        if ($this->cb_hours == 1) {
+            switch ($this->filter_cb_hours) {
+                case '=':
+                    $query->andFilterWhere(['=', 'time_entries.hours' , $this->values_hours_1]);
+                    break;
+                case '>=':
+                    $query->andFilterWhere(['>=', 'time_entries.hours' , $this->values_hours_1]);
+                    break;
+                case '<=':
+                    $query->andFilterWhere(['<=', 'time_entries.hours' , $this->values_hours_1]);
+                    break;
+                case '><':
+                    $query->andFilterWhere(['>=', 'time_entries.hours' , $this->values_hours_1]);
+                    $query->andFilterWhere(['<=', 'time_entries.hours' , $this->values_hours_2]);
+                    break;
+                default :
+                    break;
+            }
+        }
         
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

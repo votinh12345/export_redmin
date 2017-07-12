@@ -39,3 +39,8 @@
     padding-left: 30px;
 }
 /*****************End custom form***********************/
+
+ul.custom-report li{
+    list-style: none;
+    float: right;
+}
