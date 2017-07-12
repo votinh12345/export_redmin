@@ -22,5 +22,9 @@ return [
             'Sun' => 0
         ]
         
-    ]
+    ],
+    'name_default' => 'Own',
+    'position_default' => 'DEV',
+    'time_start_default' => 8.30,
+    'time_end_default' => 17.30,
 ];

@@ -7,9 +7,13 @@ use yii\behaviors\TimestampBehavior;
 use yii\data\ActiveDataProvider;
 use yii\base\Model;
 use common\models\Members;
-use common\models\Enumerations;
 use common\components\Utility;
+use common\models\Projects;
+use common\models\ExConfigMember;
 
+use PHPExcel;
+use PHPExcel_IOFactory;
+use PHPExcel_Style_Alignment;
 /**
  * Login form
  */
@@ -132,13 +136,16 @@ class FormReport extends Model
      * Created : 10-07-2017
      */
     
-    public function getListUserByProject($projectID) {
+    public function getListUserByProject($projectID, $flag = true) {
         $query = new \yii\db\Query();
         $query->select(['users.*'])
                 ->from('members');
         $query->join('INNER JOIN', 'users', 'users.id = members.user_id');
         $query->where(['=', 'members.project_id', $projectID]);
         $query->andWhere(['=', 'users.status', Members::STATUS_ACTIVE]);
+        if ($this->cb_user_id == 1 && $this->filter_user_id == '!' && !$flag) {
+            $query->andWhere(['NOT IN', 'users.id', $this->user_id]);
+        }
         return $query->all();
     }
     
@@ -148,13 +155,23 @@ class FormReport extends Model
      * Auth : Hiennv6244
      * Created : 10-07-2017
      */
-    public function listUserByProject ($projectID) {
+    public function listUserByProject ($projectID, $flag = true) {
         $result = [];
         $listUser = $this->getListUserByProject($projectID);
+        if (!$flag) {
+            $listUser = $this->getListUserByProject($projectID, false);
+        }
         if (count($listUser) > 0) {
-            foreach ($listUser as $key => $value) {
-                $result[$value['id']] = $value['lastname'] . ' ' . $value['firstname'];
+            if ($flag) {
+                foreach ($listUser as $key => $value) {
+                    $result[$value['id']] = $value['lastname'] . ' ' . $value['firstname'];
+                }
+            } else {
+                foreach ($listUser as $key => $value) {
+                    $result[] = $value['id'];
+                }
             }
+            
         }
         return $result;
     }
@@ -200,40 +217,64 @@ class FormReport extends Model
      * Auth : HienNv6244
      * Created : 12-07-2017
      */
-    public function isShowButtonExportByMember() {
+    public function isShowButtonExportByMember($flagReturnDate = true) {
         $flagShow = false;
+        $result = [];
         if ($this->check_spent_on == 1) {
             switch ($this->spent_on) {
                 case '><':
-                    $month1 = date("m",strtotime($this->values_spent_on_1));
+                    $month = $month1 = date("m",strtotime($this->values_spent_on_1));
                     $month2 = date("m",strtotime($this->values_spent_on_2));
+                    $year = date("Y",strtotime($this->values_spent_on_1));
                     if ($month1 == $month2) {
                         $flagShow = true;
                     }
+                    $result = [
+                        'month' => $month,
+                        'year' => $year
+                    ];
                     break;
                 case 'w':
                     $date = Utility::getDate($this->spent_on);
+                    $result = $this->checkDateTwoDay($date, true);
                     $flagShow = $this->checkDateTwoDay($date);
                     break;
                 case 'lw':
                     $date = Utility::getDate($this->spent_on);
+                    $result = $this->checkDateTwoDay($date, true);
                     $flagShow = $this->checkDateTwoDay($date);
                     break;
                 case 'l2w':
                     $date = Utility::getDate($this->spent_on);
+                    $result = $this->checkDateTwoDay($date, true);
                     $flagShow = $this->checkDateTwoDay($date);
                     break;
                 case 'm':
+                    $month = date("m",strtotime(date('Y-m-d')));
+                    $year = date("Y",strtotime(date('Y-m-d')));
+                    $result = [
+                        'month' => $month,
+                        'year' => $year
+                    ];
                     $flagShow = true;
                     break;
                 case 'lm':
+                    $date = date('Y-m-d', strtotime('-1 month'));
+                    $month = date("m",strtotime($date));
+                    $year = date("Y",strtotime($date));
+                    $result = [
+                        'month' => $month,
+                        'year' => $year
+                    ];
                     $flagShow = true;
                     break;
                 default :
                     break;
             }
         }
-        
+        if (!$flagReturnDate) {
+            return $result;
+        }
         return $flagShow;
     }
 
@@ -268,12 +309,20 @@ class FormReport extends Model
         return $flagShow;
     }
     
-    public function checkDateTwoDay($date) {
+    public function checkDateTwoDay($date, $flag = false) {
         $flagShow = false;
         $month1 = date("m",strtotime($date['firstDate']));
+        $year1 = date("Y",strtotime($date['firstDate']));
         $month2 = date("m",strtotime($date['lastDate']));
-        if ($month1 == $month2) {
+        $year2 = date("Y",strtotime($date['lastDate']));
+        if ($month1 == $month2 && $year1 = $year2) {
             $flagShow = true;
+        }
+        if ($flag) {
+            $result = [
+                'month' => $month1,
+                'year' => $year1
+            ];
         }
         return $flagShow;
     }
@@ -283,7 +332,7 @@ class FormReport extends Model
      * Auth : HienNV6244
      * Created : 11-07-2017
      */
-    public function getAllDataDetail($projectId) {
+    public function getAllDataDetail($projectId, $userId = NULL, $flagReturn = true) {
         $query = new \yii\db\Query();
         $query->select(['time_entries.*', 'users.firstname', 'users.lastname', 'enumerations.name as name_activity', 'issues.subject'])
                 ->from('time_entries');
@@ -357,7 +406,7 @@ class FormReport extends Model
             }
         }
         //add filter for user
-        if ($this->cb_user_id == 1) {
+        if ($this->cb_user_id == 1 && $flagReturn) {
             switch ($this->filter_user_id) {
                 case '=':
                     $query->andFilterWhere(['IN', 'users.id' , $this->user_id]);
@@ -369,6 +418,11 @@ class FormReport extends Model
                     break;
             }
         }
+        //add filter for one member
+        if (!$flagReturn) {
+            $query->andFilterWhere(['IN', 'time_entries.user_id' , $userId]);
+        }
+        
         //add filter for activity
         if ($this->cb_activity_id == 1) {
             switch ($this->filter_activity_id) {
@@ -417,7 +471,10 @@ class FormReport extends Model
                     break;
             }
         }
-        
+        if (!$flagReturn) {
+            $query->groupBy(['time_entries.spent_on']);
+            return $query->all();
+        }
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -436,4 +493,77 @@ class FormReport extends Model
         ];
         return $dataProvider;
     }
+    
+    /*
+     * Export report member
+     * 
+     * Auth : HienNV6244
+     * Created : 12-07-2017
+     */
+    public function actionExportExcelByMember($projectId) {
+        if ($this->cb_user_id == 0 || ($this->cb_user_id == 1 && $this->filter_user_id == '*')) {
+            $listUser = $this->listUserByProject($projectId, false);
+        } elseif ($this->cb_user_id == 1 && $this->filter_user_id == '=') {
+            $listUser = $this->user_id;
+        } elseif ($this->cb_user_id == 1 && $this->filter_user_id == '!') {
+            $listUser = $this->listUserByProject($projectId, false);
+        }
+        if (count($listUser) == 0) {
+            exit;
+        }
+        //created folder
+        $project = Projects::find()->select('identifier')->where(['id' => $projectId])->one();
+        $nameProject = $project['identifier'] . '_' . date('YmdHis');
+        Utility::createdFolder($nameProject);
+        $yearAndDate = $this->isShowButtonExportByMember(false);
+        foreach ($listUser as $key => $value) {
+            $fileName = '作業報告書_'.Yii::$app->params['position_default'].'(' . Yii::$app->params['name_default'] .')_' . $yearAndDate['year'] . $yearAndDate['month'] . '.xlsx';
+            $user = ExConfigMember::find()->where(['user_id' => $value])->one();
+            if ($user) {
+                $fileName = '作業報告書_' . $user->name . '(' . $user->position_project .')_' . $yearAndDate['year'] . $yearAndDate['month'] . '.xlsx';
+            }
+             //copy file default from file sample
+            copy('export_file/' . $project['identifier'] . '_template.xlsx', Yii::$app->params['folderReport'] . $nameProject . '/' . $fileName);
+            
+            $objPHPExcel = new \PHPExcel();
+            $tmpfname = Yii::$app->params['folderReport'] . $nameProject . '/' . $fileName;
+            
+            $objTpl = PHPExcel_IOFactory::load($tmpfname);
+            $objTpl->setActiveSheetIndex(0);
+            //set date for J9
+            $date = $yearAndDate['year'] . '-' . $yearAndDate['month'] . '01';
+            $lastDate = date("m/t/Y", strtotime($date));
+            $objTpl->getActiveSheet()->setCellValue('J9', $lastDate);
+            //$objTpl->getActiveSheet()->getStyle('C2')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT); //C1 is right-justified
+            //set data for C5
+            $dataC5 = $yearAndDate['month'] . '月度 作業報告書（兼納品書）';
+            $objTpl->getActiveSheet()->setCellValue('C5', $dataC5);
+            
+            //set data for J9
+            $dataUser = \common\models\User::find()->where(['id' => $value])->one();
+            $dataJ9 = $dataUser->firstname . ' ' . $dataUser->lastname;
+            $objTpl->getActiveSheet()->setCellValue('J9', $dataJ9);
+            
+            //get all data
+            $data = $this->getAllDataDetail($projectId, $value, FALSE);
+            if (count($data) > 0) {
+                foreach ($data as $key => $value) {
+                    
+                }
+            }
+            
+//            $objTpl->getActiveSheet()->getStyle('C4')->getAlignment()->setWrapText(true);  //set wrapped for some long text message
+//
+//            $objTpl->getActiveSheet()->getColumnDimension('C')->setWidth(40);  //set column C width
+//            $objTpl->getActiveSheet()->getRowDimension('4')->setRowHeight(120);  //set row 4 height
+//            $objTpl->getActiveSheet()->getStyle('A4:C4')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP); //A4 until C4 is vertically top-aligned
+
+
+            $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');  //downloadable file is in Excel 2003 format (.xls)
+            $objWriter->save(Yii::$app->params['folderReport'] . $nameProject . '/' . $fileName);  //send it to user, of course you can save it to disk also!
+
+            exit;
+        }
+    }
+    
 }
