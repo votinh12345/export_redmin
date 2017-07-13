@@ -62,4 +62,18 @@ class Utility extends Component
         }
         return true;
     }
+    
+    /*
+     * check exit file
+     * 
+     * Auth : HienNV6244
+     * Created : 13-07-2017
+     */
+    public static function checkExitFile($fileName, $pathRoot, $typeFile) {
+        $pathFile = Url::to(Yii::$app->params[$pathRoot]) . $fileName . '_template.' . $typeFile;
+        if (file_exists($pathFile)) {
+            return TRUE;
+        }
+        return FALSE;
+    }
 }

@@ -10,10 +10,14 @@ use common\models\Members;
 use common\components\Utility;
 use common\models\Projects;
 use common\models\ExConfigMember;
+use common\models\Users;
 
 use PHPExcel;
 use PHPExcel_IOFactory;
 use PHPExcel_Style_Alignment;
+use PHPExcel_Style_NumberFormat;
+use PHPExcel_Style_Color;
+use ZipArchive;
 /**
  * Login form
  */
@@ -332,7 +336,7 @@ class FormReport extends Model
      * Auth : HienNV6244
      * Created : 11-07-2017
      */
-    public function getAllDataDetail($projectId, $userId = NULL, $flagReturn = true) {
+    public function getAllDataDetail($projectId, $userId = NULL, $flagReturn = true, $flagFilterDate = true, $spentOn = NULL) {
         $query = new \yii\db\Query();
         $query->select(['time_entries.*', 'users.firstname', 'users.lastname', 'enumerations.name as name_activity', 'issues.subject'])
                 ->from('time_entries');
@@ -340,7 +344,8 @@ class FormReport extends Model
         $query->join('INNER JOIN', 'issues', 'issues.id = time_entries.issue_id');
         $query->join('INNER JOIN', 'enumerations', 'enumerations.id = time_entries.activity_id');
         $query->andFilterWhere(['=', 'time_entries.project_id' , $projectId]);
-        if ($this->check_spent_on == 1) {
+        //filter for date
+        if ($this->check_spent_on == 1 && $flagFilterDate) {
             switch ($this->spent_on) {
                 case '=':
                     $query->andFilterWhere(['=', 'time_entries.spent_on' , $this->values_spent_on_1]);
@@ -404,6 +409,10 @@ class FormReport extends Model
                 default:
                     break;
             }
+        }
+        //add filter for date
+        if (!$flagFilterDate) {
+            $query->andFilterWhere(['=', 'time_entries.spent_on' , $spentOn]);
         }
         //add filter for user
         if ($this->cb_user_id == 1 && $flagReturn) {
@@ -471,10 +480,17 @@ class FormReport extends Model
                     break;
             }
         }
-        if (!$flagReturn) {
+        //return all data
+        if (!$flagReturn && $flagFilterDate) {
             $query->groupBy(['time_entries.spent_on']);
+            $query->orderBy(['time_entries.spent_on' => SORT_ASC]);
             return $query->all();
         }
+        //return data for one day
+        if (!$flagReturn && !$flagFilterDate) {
+            return $query->all();
+        }
+        
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
@@ -509,19 +525,43 @@ class FormReport extends Model
             $listUser = $this->listUserByProject($projectId, false);
         }
         if (count($listUser) == 0) {
-            exit;
+            $message = 'User not found';
+            Yii::$app->session->setFlash('message_export', $message);
+            return true;
         }
-        //created folder
+        
         $project = Projects::find()->select('identifier')->where(['id' => $projectId])->one();
         $nameProject = $project['identifier'] . '_' . date('YmdHis');
+        //check exit file template 
+        if (!Utility::checkExitFile($project['identifier'], 'folder_template', 'xlsx')) {
+            $message = 'File template do not exit';
+            Yii::$app->session->setFlash('message_export', $message);
+            return true;
+        }
+        //created folder
         Utility::createdFolder($nameProject);
         $yearAndDate = $this->isShowButtonExportByMember(false);
+        //created file zip
+        $compress = new ZipArchive();
+        $compressFolder = Yii::$app->params['folderReport'] . $nameProject . '.zip';
+        $compress->open($compressFolder, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        
+        $startRow = 11;
+        $endRow = 42;
+        $date = $yearAndDate['year'] . '-' . $yearAndDate['month'] . '-' . '01';
+        $lastDate = date("m/t/Y", strtotime($date));
+        $endDayMonth = date("d", strtotime($lastDate));
         foreach ($listUser as $key => $value) {
             $fileName = '作業報告書_'.Yii::$app->params['position_default'].'(' . Yii::$app->params['name_default'] .')_' . $yearAndDate['year'] . $yearAndDate['month'] . '.xlsx';
             $user = ExConfigMember::find()->where(['user_id' => $value])->one();
+            $timeStart = Yii::$app->params['time_start_default'];
+            $timeEnd = Yii::$app->params['time_end_default'];
             if ($user) {
+                $timeStart = $user->time_start;
+                $timeEnd = $user->time_end;
                 $fileName = '作業報告書_' . $user->name . '(' . $user->position_project .')_' . $yearAndDate['year'] . $yearAndDate['month'] . '.xlsx';
             }
+            
              //copy file default from file sample
             copy('export_file/' . $project['identifier'] . '_template.xlsx', Yii::$app->params['folderReport'] . $nameProject . '/' . $fileName);
             
@@ -531,39 +571,58 @@ class FormReport extends Model
             $objTpl = PHPExcel_IOFactory::load($tmpfname);
             $objTpl->setActiveSheetIndex(0);
             //set date for J9
-            $date = $yearAndDate['year'] . '-' . $yearAndDate['month'] . '01';
-            $lastDate = date("m/t/Y", strtotime($date));
-            $objTpl->getActiveSheet()->setCellValue('J9', $lastDate);
-            //$objTpl->getActiveSheet()->getStyle('C2')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT); //C1 is right-justified
+            $objTpl->getActiveSheet()->setCellValue('L1', $lastDate);
             //set data for C5
             $dataC5 = $yearAndDate['month'] . '月度 作業報告書（兼納品書）';
             $objTpl->getActiveSheet()->setCellValue('C5', $dataC5);
             
             //set data for J9
-            $dataUser = \common\models\User::find()->where(['id' => $value])->one();
+            $dataUser = Users::find()->where(['id' => $value])->one();
             $dataJ9 = $dataUser->firstname . ' ' . $dataUser->lastname;
             $objTpl->getActiveSheet()->setCellValue('J9', $dataJ9);
             
             //get all data
             $data = $this->getAllDataDetail($projectId, $value, FALSE);
             if (count($data) > 0) {
-                foreach ($data as $key => $value) {
-                    
+                foreach ($data as $key1 => $value1) {
+                    $row = (int)date("d", strtotime($value1['spent_on']));
+                    $rowWrite = $startRow + $row;
+                    $objTpl->getActiveSheet()->setCellValue('D'.$rowWrite, $timeStart);
+                    $objTpl->getActiveSheet()->getStyle('D'.$rowWrite)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_TIME3);
+                    //$objTpl->getStyle('D'.$rowWrite)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_TIME1);
+                    $objTpl->getActiveSheet()->setCellValue('E'.$rowWrite, '～');
+                    $objTpl->getActiveSheet()->setCellValue('F'.$rowWrite, $timeEnd);
+                    $objTpl->getActiveSheet()->getStyle('F'.$rowWrite)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_TIME3); 
+                    $listTask = $this->getAllDataDetail($projectId, $value1['user_id'], FALSE, FALSE, $value1['spent_on']);
+                    $task = '';
+                    if (count($listTask) > 0) {
+                        foreach ($listTask as $key2 => $value2) {
+                            $task .= 'Task #'.$value2['issue_id'] . ': ' . $value2['subject'] . "\n";
+                        }
+                    }
+                    $objTpl->getActiveSheet()->setCellValue('H'.$rowWrite, $task);
                 }
             }
-            
-//            $objTpl->getActiveSheet()->getStyle('C4')->getAlignment()->setWrapText(true);  //set wrapped for some long text message
-//
-//            $objTpl->getActiveSheet()->getColumnDimension('C')->setWidth(40);  //set column C width
-//            $objTpl->getActiveSheet()->getRowDimension('4')->setRowHeight(120);  //set row 4 height
-//            $objTpl->getActiveSheet()->getStyle('A4:C4')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP); //A4 until C4 is vertically top-aligned
-
-
-            $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');  //downloadable file is in Excel 2003 format (.xls)
-            $objWriter->save(Yii::$app->params['folderReport'] . $nameProject . '/' . $fileName);  //send it to user, of course you can save it to disk also!
-
-            exit;
+            //remove row
+            $totalRemove = 31 - $endDayMonth;
+            if (count($totalRemove) > 0) {
+                for($i = 0; $i < count($totalRemove); $i++) {
+                    $objTpl->getActiveSheet()->removeRow($endRow-$i);
+                }
+            }
+            $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');
+            $objWriter->save(Yii::$app->params['folderReport'] . $nameProject . '/' . $fileName);
+            $compress->addFile(Yii::$app->params['folderReport'] . $nameProject . '/' . $fileName);
         }
+        $compress->close();
+        
+        //download file
+        header("Content-type: application/zip"); 
+        header("Content-Disposition: attachment; filename=$compressFolder"); 
+        header("Pragma: no-cache"); 
+        header("Expires: 0"); 
+        readfile("$compressFolder");
+        exit;
     }
     
 }

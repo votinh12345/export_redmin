@@ -25,6 +25,7 @@ return [
     ],
     'name_default' => 'Own',
     'position_default' => 'DEV',
-    'time_start_default' => 8.30,
-    'time_end_default' => 17.30,
+    'time_start_default' => '8:30',
+    'time_end_default' => '17:30',
+    'folder_template' => 'export_file/'
 ];

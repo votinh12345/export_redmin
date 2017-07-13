@@ -80,7 +80,7 @@ if ($formModelReport->filter_cb_hours == '*') {
                             <?= Html::activeDropDownList($formModelReport, 'spent_on', FormReport::$FILTER_DATE, ['class' => 'form-control']); ?>
                         </div>
                         <div class="col-md-6" id="values_filter_date">
-                            <span id="values_spent_on_1" class="col-md-6" style="margin-right: 20px; <?= (!$flagShowSpentOn1) ? 'display:none;' : '' ?>">
+                            <span id="values_spent_on_1" style="display:inline-block; margin-right: 20px; <?= (!$flagShowSpentOn1) ? 'display:none;' : '' ?>">
                                 <div class="input-group date">
                                     <div class="input-group-addon">
                                       <i class="fa fa-calendar"></i>
@@ -88,7 +88,7 @@ if ($formModelReport->filter_cb_hours == '*') {
                                     <?= Html::activeTextInput($formModelReport, 'values_spent_on_1', ['class' => 'form-control pull-right']); ?>
                                 </div>
                             </span>
-                            <span id="values_spent_on_2" class="col-md-6" style="margin-right: 20px; <?= (!$flagShowSpentOn2) ? 'display:none;' : '' ?>">
+                            <span id="values_spent_on_2" style="display:inline-block; <?= (!$flagShowSpentOn2) ? 'display:none;' : '' ?>">
                                 <div class="input-group date">
                                     <div class="input-group-addon">
                                       <i class="fa fa-calendar"></i>
@@ -165,6 +165,11 @@ if ($formModelReport->filter_cb_hours == '*') {
             </div>
             <hr>
             <div class="row">
+                <!-- complete message -->
+                <?php if (Yii::$app->session->hasFlash('message_export')) : ?>
+                <div class="box-body"><div class="callout callout-danger"><h5><?= Yii::$app->session->getFlash('message_export') ?></h5></div></div>
+                <?php endif; ?>
+                <!-- /complete message -->
                 <div class="col-md-12">
                     <!-- Custom Tabs -->
                     <?php ActiveForm::begin(['options' => ['id' => 'form']]); ?>

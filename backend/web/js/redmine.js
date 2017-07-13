@@ -38,7 +38,7 @@ $(document).ready(function(){
         if (filter_date == '>t-' || filter_date == '<t-' || filter_date == '><t-' ||  filter_date == 't-') {
             value_filter = 3;
         }
-        if (filter_date == 't' || filter_date == 'ld' || filter_date == 'w' ||  filter_date == 'lw' ||  filter_date == 'l2w' ||  filter_date == 'w' ||  filter_date == 'm' || filter_date == 'y' || filter_date == '!*' || filter_date == '*') {
+        if (filter_date == 't' || filter_date == 'ld' || filter_date == 'w' ||  filter_date == 'lw' ||  filter_date == 'l2w' ||  filter_date == 'w' ||  filter_date == 'm' || filter_date == 'lm' || filter_date == 'y' || filter_date == '!*' || filter_date == '*') {
             value_filter = 4;
         }
         switch(value_filter) {
