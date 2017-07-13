@@ -37,7 +37,6 @@ class AppAsset extends AssetBundle
         'plugins/iCheck/icheck.min.js',
         'dist/js/adminlte.min.js',
         'dist/js/demo.js',
-        'dist/js/adminlte.min.js',
         'js/redmine.js',
     ];
     public $jsOptions = array(

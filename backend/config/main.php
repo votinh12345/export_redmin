@@ -46,6 +46,7 @@ return [
             'rules' => [
                 'project' => 'site/index',
                 'report/detail/<id:\w+>' => 'report/detail',
+                'template/detail/<id:\w+>' => 'template/detail',
             ],
         ],
         'request' => [
