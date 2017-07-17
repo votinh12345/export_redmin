@@ -44,3 +44,7 @@ ul.custom-report li{
     list-style: none;
     float: right;
 }
+/********************Error***************************/
+.help-block{
+    color: red;
+}

@@ -45,8 +45,9 @@ return [
             'showScriptName' => false,
             'rules' => [
                 'project' => 'site/index',
-                'report/detail/<id:\w+>' => 'report/detail',
-                'template/detail/<id:\w+>' => 'template/detail',
+                'export/single/<id:\w+>' => 'export/single',
+                'export/multiple_project' => 'export/multiple_project',
+                'template/detail/<type:\w+>' => 'template/detail',
             ],
         ],
         'request' => [

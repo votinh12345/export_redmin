@@ -24,7 +24,10 @@ AppAsset::register($this);
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?= Html::encode($this->title) ?></title>
         <script src="<?= Url::base(); ?>/bower_components/jquery/dist/jquery.min.js"></script>
-        <link rel="stylesheet" href="<?= Url::base(); ?>/css/font-google.css">
+        <link rel="stylesheet" href="<?= Yii::$app->homeUrl; ?>/css/font-google.css">
+        <script>
+            var baseUrl = '<?= Url::base();;?>';
+        </script>
         <?php $this->head() ?>
     </head>
     <body class="hold-transition skin-blue sidebar-mini" >

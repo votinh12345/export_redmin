@@ -5,6 +5,9 @@ use Yii;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
+use yii\web\UploadedFile;
+use backend\models\FormTemplate;
+
 
 /**
  * Site controller
@@ -57,8 +60,29 @@ class TemplateController extends Controller
      *
      * @return string
      */
-    public function actionDetail()
+    public function actionDetail($type)
     {
-        return $this->render('detail');
+//        $config = yii\helpers\ArrayHelper::merge(
+//            require(__DIR__ . '/../../common/config/main.php'),
+//            require('./test.php')
+//        );  
+//        var_dump($config);die('111');
+        $formModel = new FormTemplate();
+        $formModel->type_template = $type;
+        $request = Yii::$app->request;
+        $listFileTemplate = $formModel->getListImageFiles();
+        if ($request->isPost) {
+            $dataPost = $request->post();
+            $formModel->load($dataPost);
+            $formModel->template = UploadedFile::getInstance($formModel, 'template');
+            $formModel->note_template = UploadedFile::getInstance($formModel, 'note_template');
+            if ($formModel->validate()) {
+                $formModel->upload();
+            }
+        }
+        return $this->render('detail', [
+            'model' => $formModel,
+            'listFileTemplate' => $listFileTemplate
+        ]);
     }
 }

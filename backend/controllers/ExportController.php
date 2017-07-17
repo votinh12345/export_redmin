@@ -5,7 +5,9 @@ use Yii;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
-use common\models\LoginForm;
+use common\models\Projects;
+use backend\models\FormReport;
+use common\models\Enumerations;
 
 /**
  * Site controller
@@ -22,7 +24,7 @@ class ExportController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['index'],
+                        'actions' => ['index', 'single'],
                         'allow' => true,
                     ],
                     [
@@ -61,5 +63,57 @@ class ExportController extends Controller
     public function actionIndex()
     {
         return $this->render('index');
+    }
+    
+     /**
+     * Displays homepage.
+     *
+     * @return string
+     */
+    public function actionSingle($id)
+    {
+        $request = Yii::$app->request;
+        $modelProjects = new Projects();
+        $modelEnumerations = new Enumerations();
+        $formModelReport = new FormReport();
+        
+        $ProjectsItem = $modelProjects->find()->where(['id' => $id])->one();
+        if (empty($ProjectsItem)) {
+            return Yii::$app->response->redirect(['/site/error']);
+        }
+        $param = $request->queryParams;
+        //set value filter before search
+        if (empty($param['FormReport'])) {
+            $formModelReport->check_spent_on = 1;
+            $formModelReport->cb_user_id = $formModelReport->cb_activity_id = $formModelReport->cb_comments = $formModelReport->cb_hours = 0;
+            $formModelReport->spent_on = '*';
+            $formModelReport->filter_user_id = '=';
+            $formModelReport->filter_activity_id = '=';
+            $formModelReport->filter_cb_comments = '~';
+            $formModelReport->filter_cb_hours = '*';
+        } else {
+            $formModelReport->setAttributes($param['FormReport']);
+        }
+        
+        if ($request->isPost) {
+            $post = $request->post();
+            if (!empty($post['export-member'])) {
+                $formModelReport->actionExportExcelByMember($id);
+            }
+        }
+        //get list filter
+        $listUserByProject = $formModelReport->listUserByProject($ProjectsItem->id);
+        
+        $listActivity = $modelEnumerations->getListActitivty();
+        
+        $dataProvider = $formModelReport->getAllDataDetail($id);
+        
+        return $this->render('single', [
+            'formModelReport' => $formModelReport,
+            'listUserByProject' => $listUserByProject,
+            'projectsItem' => $ProjectsItem,
+            'listActivity' => $listActivity,
+            'dataProvider' => $dataProvider
+        ]);
     }
 }
