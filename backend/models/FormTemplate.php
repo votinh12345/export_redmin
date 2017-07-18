@@ -94,7 +94,7 @@ class FormTemplate extends Model
         $listFile = FileHelper::findFiles(Yii::$app->params['folder_template'], ['only' => ['*' . '.xlsx']]);
         if (count($listFile) > 0) {
             foreach ($listFile as $key => $value) {
-                $list[] =  str_replace(Yii::$app->params['folder_template'], "", $value);
+                $list[] = substr(str_replace([Yii::$app->params['folder_template'], '.xlsx'], "", $value), 1);
             }
         }
         return $list;

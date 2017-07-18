@@ -64,10 +64,17 @@ $this->title = 'Export Excell';
                             'clientOptions' => ['height' => 300]
                         ]) ?>
                     </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Select</label>
+                            <?= Html::activeDropDownList($modelFormExprort, 'template', $listFileTemplate, ['class' => 'form-control', 'style' => 'width: 100%;']); ?>
+                        </div>
+                    </div>
                     
                     <div class="control-group">
-                        <?= Html::submitButton('Apply', ['class' => 'btn btn-warning']) ?>
-                        <a class="btn btn-default" href="<?php echo Url::to(['export/index']); ?>">Clear</a>
+                        <?= Html::submitButton('Apply',[ 'name'=>'view', 'value' => 'view', 'class' => 'btn btn-primary btn-lg','data-pjax' => 0, 'id' => 'view']) ?>
+                        <?= Html::submitButton('Export',[ 'name'=>'export', 'value' => 'export', 'class' => 'btn btn-success btn-lg','data-pjax' => 0, 'id' => 'export']) ?>
+                        <a class="btn btn-warning btn-lg" href="<?php echo Url::to(['export/index']); ?>">Clear</a>
                     </div>
                 </div>
                 <?php ActiveForm::end(); ?>
@@ -109,13 +116,16 @@ $this->title = 'Export Excell';
                                                     return $data['spent_on'];
                                                 }
                                             ],
-//                                            [
-//                                                'attribute' => 'full_name',
-//                                                'label' => 'User',
-//                                                'content' => function ($data) {
-//                                                    return $data['full_name'];
-//                                                }
-//                                            ],
+                                            [
+                                                'attribute' => 'full_name',
+                                                'label' => 'User',
+                                                'content' => function ($data) {
+                                                    if (isset($data['full_name'])) {
+                                                        return $data['full_name'];
+                                                    }
+                                                    return '';
+                                                }
+                                            ],
 //                                            [
 //                                                'attribute' => 'name_activity',
 //                                                'label' => 'Activity',
