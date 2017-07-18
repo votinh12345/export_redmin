@@ -5,124 +5,174 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\widgets\Pjax;
 use yii\web\Session;
+use dosamigos\ckeditor\CKEditor;
 
-$this->title = 'List Project';
+$this->title = 'Export Excell';
 ?>
-<!--breadcrumbs-->
-<div id="content-header">
-    <div id="breadcrumb">
-      <a href="<?= Url::to(['/']); ?>" title="Go to Home" class="tip-bottom"><i class="icon-home"></i> Home</a>
-      <a href="#" class="tip-bottom">List Project</a>
-    </div>
-    <h1>List Project</h1>
-</div>
-<!--End-breadcrumbs-->
-<div class="container-fluid">
-    <hr>
-    <div class="row-fluid">
-        <div class="span12">
-            <div class="widget-box">
-                <div class="widget-title"> <span class="icon"> <i class="icon-align-justify"></i> </span>
-                    <h5>List Project</h5>
-                </div>
-                
-                <div class="widget-content nopadding">
-                    <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper" role="grid">
-                        <?php ActiveForm::begin(['options' => ['id' => 'form']]); ?>
-                        <?php if ($dataProvider->getTotalCount() == 0) : ?>
-                            <p class="txtWarning"><span class="iconNo">Data does not exist</span></p>
-                        <?php else : ?>
 
-                            <?php Pjax::begin(); ?>
-                            <?=
-                                GridView::widget([
-                                    'dataProvider' => $dataProvider,
-                                    'layout' => '{items}<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix">'
-                                    . '<div id="paging" class="dataTables_paginate fg-buttonset ui-buttonset fg-buttonset-multi ui-buttonset-multi paging_full_numbers">{pager}</div></div>',
-                                    'summary' => '<div class="pageList_data"><strong>ALL {totalCount} Item {begin} ～ {end}</strong>'
-                                    . '</div><div class="pageList_del"><div class="pageList_del_item"></div></div>',
-                                    'rowOptions'   => function ($model, $index, $widget, $grid) {
-                                        if ($index % 2 == 0) {
-                                                return [
-                                                    'id' => $model['id'],
-                                                    'class' => 'odd',
-                                                    'onclick' => 'location.href="'
-                                                        . Yii::$app->urlManager->createUrl('exam/detail') 
-                                                        . '/"+(this.id);'
-                                                ];
-                                        } else {
-                                            return [
-                                                'id' => $model['id'],
-                                                'class' => 'even',
-                                                'onclick' => 'location.href="'
-                                                    . Yii::$app->urlManager->createUrl('exam/detail') 
-                                                    . '/"+(this.id);'
-                                            ];
-                                        }
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>
+        Export Excell
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="<?= Url::to(['/']); ?>"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Export</li>
+    </ol>
+</section>
+<!-- Main content -->
+<section class="content">
+    <!-- SELECT2 EXAMPLE -->
+    <div class="box box-default">
+        <div class="box-header with-border">
+            <h3 class="box-title">Form Export</h3>
+        </div>
+        
+        <!-- /.box-header -->
+        <div class="box-body">
+            <div class="row">
+                <?php
+                    $form = ActiveForm::begin([
+                                'action' => ['export/index/'],
+                                'method' => 'get',
+                                'options' => [
+                                    'class' => 'form-horizontal custom-form'
+                                ]
+                    ]);
+                ?>
+                <div class="col-md-12">
+                    <div class="col-md-6">
+                        <?= $form->field($modelFormExprort, 'sql_single_project')->widget(CKEditor::className(), [
+                            'options' => ['rows' => 10, 'readOnly' => true],
+                            'preset' => 'basic',
+                            'clientOptions' => ['height' => 300]
 
-                                    },
-                                    'columns' => [
-                                        [
-                                            'attribute' => 'id',
-                                            'label' => 'Project ID',
-                                            'headerOptions' => ['class' => ''],
-                                            'contentOptions' => ['class' => 'sorting_1'],
-                                            'content' => function ($data) {
-                                                return '<a data-pjax="0" href="' . Url::to(['/exam/detail',
-                                                            'examId' => $data["id"]]) . '">' . $data['id'] . '</a>';
-                                            }
-                                        ],
-                                        [
-                                            'attribute' => 'name',
-                                            'label' => 'Name',
-                                            'headerOptions' => ['class' => ''],
-                                            'content' => function ($data) {
-                                                return $data['name'];
-                                            }
-                                        ],
-                                        [
-                                            'attribute' => 'description',
-                                            'label' => 'Description',
-                                            'headerOptions' => ['class' => '', 'width' => '40%'],
-                                            'contentOptions' => ['width' => '40%'],
-                                            'content' => function ($data) {
-                                                return $data['description'];
-                                            }
-                                        ],
-                                        [
-                                            'attribute' => 'created_on',
-                                            'label' => 'Created On',
-                                            'content' => function ($data) {
-                                                return $data['created_on'];
-                                            }
-                                        ],
-                                        [
-                                            'attribute' => 'updated_on',
-                                            'label' => 'Updated On',
-                                            'content' => function ($data) {
-                                                return $data['updated_on'];
-                                            }
-                                        ],
-                                    ],
-                                    'tableOptions' => ['class' => 'table table-bordered table-striped'],
-                                    'pager' => [
-                                        'prevPageLabel' => 'Prev',
-                                        'nextPageLabel' => 'Next',
-                                        'activePageCssClass' => 'paginate_button active',
-                                        'disabledPageCssClass' => 'paginate_button previous disabled',
-                                        'options' => [
-                                            'class' => 'pagination_custom',
-                                            'id' => 'pager-container',
-                                        ],
-                                    ],
-                                ]);
-                                ?>
-                            <?php Pjax::end(); ?>
-                        <?php endif; ?>
-                    <?php ActiveForm::end(); ?>
+                        ]) ?>
                     </div>
+                    <div class="col-md-6">
+                        <?= $form->field($modelFormExprort, 'sql_multiple_project')->widget(CKEditor::className(), [
+                            'options' => ['rows' => 6,'readOnly' => true],
+                            'preset' => 'basic',
+                            'clientOptions' => ['height' => 300]
+                        ]) ?>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <?= $form->field($modelFormExprort, 'sql')->widget(CKEditor::className(), [
+                            'options' => ['rows' => 6],
+                            'preset' => 'basic',
+                            'clientOptions' => ['height' => 300]
+                        ]) ?>
+                    </div>
+                    
+                    <div class="control-group">
+                        <?= Html::submitButton('Apply', ['class' => 'btn btn-warning']) ?>
+                        <a class="btn btn-default" href="<?php echo Url::to(['export/index']); ?>">Clear</a>
+                    </div>
+                </div>
+                <?php ActiveForm::end(); ?>
+            </div>
+            <hr>
+            
+            <div class="row">
+                <!-- complete message -->
+                <?php if (Yii::$app->session->hasFlash('message_export')) : ?>
+                <div class="box-body"><div class="callout callout-danger"><h5><?= Yii::$app->session->getFlash('message_export') ?></h5></div></div>
+                <?php endif; ?>
+                <!-- /complete message -->
+                <div class="col-md-12">
+                    <!-- Custom Tabs -->
+                    <?php ActiveForm::begin(['options' => ['id' => 'form']]); ?>
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#tab_1" data-toggle="tab">Detail</a></li>
+                            <li><a href="#tab_2" data-toggle="tab">Report</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="tab_1">
+                                <?php if ($dataProvider->getTotalCount() == 0) : ?>
+                                <p class="txtWarning"><span class="iconNo">Data does not exist</span></p>
+                                <?php else : ?>
+                                    <?php Pjax::begin(); ?>
+                                    <?=
+                                    GridView::widget([
+                                        'dataProvider' => $dataProvider,
+                                        'layout' => '<div class="mBoxitem_listinfo">{summary}</div>{items}<div class="mBoxitem_listinfo">'
+                                        . '<div id="paging" class="light-theme simple-pagination">{pager}</div></div>',
+                                        'summary' => '<div class="pageList_data"><strong>ALL {totalCount} Item {begin} ～ {end}</strong>'
+                                        . '</div><div class="pageList_del"><div class="pageList_del_item"></div></div>',
+                                        'columns' => [
+                                            [
+                                                'attribute' => 'spent_on',
+                                                'label' => 'Date',
+                                                'content' => function ($data) {
+                                                    return $data['spent_on'];
+                                                }
+                                            ],
+//                                            [
+//                                                'attribute' => 'full_name',
+//                                                'label' => 'User',
+//                                                'content' => function ($data) {
+//                                                    return $data['full_name'];
+//                                                }
+//                                            ],
+//                                            [
+//                                                'attribute' => 'name_activity',
+//                                                'label' => 'Activity',
+//                                                'content' => function ($data) {
+//                                                    return $data['name_activity'];
+//                                                }
+//                                            ],
+//                                            [
+//                                                'attribute' => 'subject',
+//                                                'label' => 'Issue',
+//                                                'content' => function ($data) {
+//                                                    return $data['subject'];
+//                                                }
+//                                            ],
+//                                            [
+//                                                'attribute' => 'comments',
+//                                                'label' => 'Comment',
+//                                                'content' => function ($data) {
+//                                                    return $data['comments'];
+//                                                }
+//                                            ],
+//                                            [
+//                                                'attribute' => 'hours',
+//                                                'label' => 'Hours',
+//                                                'content' => function ($data) {
+//                                                    return $data['hours'];
+//                                                }
+//                                            ]
+                                        ],
+                                        'tableOptions' => ['class' => 'table table-bordered table-hover'],
+                                        'pager' => [
+                                            'prevPageLabel' => 'Prev',
+                                            'nextPageLabel' => 'Next',
+                                            'activePageCssClass' => 'paginate_button active',
+                                            'disabledPageCssClass' => 'paginate_button previous disabled',
+                                            'options' => [
+                                                'class' => 'pagination',
+                                                'id' => 'pager-container',
+                                            ],
+                                        ],
+                                    ]);
+                                    ?>
+                                    <?php Pjax::end(); ?>
+                                <?php endif; ?>
+                            </div>
+                            <!-- /.tab-pane -->
+                            <div class="tab-pane" id="tab_2">
+                            a1
+                            </div>
+                          <!-- /.tab-pane -->
+                        </div>
+                      <!-- /.tab-content -->
+                    </div>
+                    <?php ActiveForm::end(); ?>
                 </div>
             </div>
         </div>
+        
     </div>
-</div>
+</section>

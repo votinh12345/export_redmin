@@ -8,6 +8,7 @@ use yii\filters\AccessControl;
 use common\models\Projects;
 use backend\models\FormReport;
 use common\models\Enumerations;
+use backend\models\FormExport;
 
 /**
  * Site controller
@@ -62,7 +63,30 @@ class ExportController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $modelFormExprort = new FormExport();
+        $sql_single = file_get_contents('template/sql_single.txt', true);
+        $sql_multiple = file_get_contents('template/sql_multiple.txt', true);
+        $modelFormExprort->sql_single_project = $sql_single;
+        $modelFormExprort->sql_multiple_project = $sql_multiple;
+        $request = Yii::$app->request;
+        
+        $dataProvider = $modelFormExprort->getAllDataDetail();
+        $param = $request->queryParams;
+        if (!empty($param['FormExport'])) {
+            $modelFormExprort->setAttributes($param['FormExport']);
+            $query = str_replace("&#39;", "'", html_entity_decode(strip_tags($modelFormExprort->sql)));
+            $query = str_replace("&#039;", "'", $query);
+            $query = str_replace("/\s+/", " ", $query);
+            $query = trim(preg_replace('/(\t|\n|\v|\f|\r| |\xC2\x85|\xc2\xa0|\xe1\xa0\x8e|\xe2\x80[\x80-\x8D]|\xe2\x80\xa8|\xe2\x80\xa9|\xe2\x80\xaF|\xe2\x81\x9f|\xe2\x81\xa0|\xe3\x80\x80|\xef\xbb\xbf)+/', ' ', $query));
+            
+            //var_dump($query);die;
+            $dataProvider = $modelFormExprort->getAllDataDetail($query);
+        }
+        
+        return $this->render('index', [
+            'modelFormExprort' => $modelFormExprort,
+            'dataProvider' => $dataProvider
+        ]);
     }
     
      /**

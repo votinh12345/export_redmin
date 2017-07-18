@@ -43,6 +43,12 @@ $this->title = 'Template';
     <?php endif;?>
     <div class="row">
         <div class="col-md-12">
+            <!-- complete message -->
+            <?php if (Yii::$app->session->hasFlash('message')) : ?>
+            <div class="callout callout-info">
+                <p><?= Yii::$app->session->getFlash('message') ?></p>
+            </div>
+            <?php endif;?>
             <div class="box box-primary">
                 <div class="box-header with-border">
                     <h3 class="box-title">Template Form Elements</h3>
@@ -52,11 +58,6 @@ $this->title = 'Template';
                 <?php $form = ActiveForm::begin(['errorCssClass' => 'error']); ?>
                     
                     <div class="box-body">
-                        <div class="form-group">
-                            <label for="type_template">Type Template</label>
-                            <?= $form->field($model, 'type_template')->dropDownList(FormTemplate::$TYPE_TEMPLATE, ['class' => 'form-control'])->label(false);?>
-                            
-                        </div>
                         <div class="form-group">
                             <label for="name_template">Name Template</label>
                             <?= $form->field($model, 'name_template', ['options' => ['class' => ''], 'template' => '{input}{error}'])->textInput(['placeholder' => 'Name Template', 'class' => 'form-control'])->label(false); ?>

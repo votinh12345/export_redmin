@@ -32,19 +32,12 @@ $firtProject = Projects::find()->one();
                 </a>
             </li>
             <li>
-                <a href="<?= Url::to(['/export/multiple_project']); ?>">
-                    <i class="fa fa-th"></i> <span>Export Excel Multiple Project</span>
+                <a href="<?= Url::to(['/export/index/']); ?>">
+                    <i class="fa fa-th"></i> <span>Export Excel</span>
                 </a>
             </li>
-            <?php if (count($firtProject) > 0) :?>
-            <li>
-                <a href="<?= Url::to(['/export/single/'. $firtProject->id]); ?>">
-                    <i class="fa fa-th"></i> <span>Export Excel Single Project</span>
-                </a>
-            </li>
-            <?php endif;?>
             <li class="<?= (Yii::$app->controller->id == 'template') ? 'active' : '';?>">
-                <a href="<?= Url::to(['/template/detail/single']); ?>">
+                <a href="<?= Url::to(['/template/index']); ?>">
                     <i class="fa fa-file-excel-o"></i>
                     <span>Template Export</span>
                 </a>

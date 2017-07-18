@@ -24,7 +24,7 @@ class TemplateController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['detail'],
+                        'actions' => ['index'],
                         'allow' => true,
                     ],
                     [
@@ -60,7 +60,7 @@ class TemplateController extends Controller
      *
      * @return string
      */
-    public function actionDetail($type)
+    public function actionIndex()
     {
 //        $config = yii\helpers\ArrayHelper::merge(
 //            require(__DIR__ . '/../../common/config/main.php'),
@@ -68,7 +68,6 @@ class TemplateController extends Controller
 //        );  
 //        var_dump($config);die('111');
         $formModel = new FormTemplate();
-        $formModel->type_template = $type;
         $request = Yii::$app->request;
         $listFileTemplate = $formModel->getListImageFiles();
         if ($request->isPost) {
@@ -78,6 +77,8 @@ class TemplateController extends Controller
             $formModel->note_template = UploadedFile::getInstance($formModel, 'note_template');
             if ($formModel->validate()) {
                 $formModel->upload();
+                Yii::$app->session->setFlash('message', 'upload template success');
+                return Yii::$app->response->redirect(['/template/detail/', 'type' => $formModel->type_template]);
             }
         }
         return $this->render('detail', [

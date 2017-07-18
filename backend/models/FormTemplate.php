@@ -76,9 +76,9 @@ class FormTemplate extends Model
      */
     public function upload()
     {
-        $fileTemplateName = $this->type_template . '_' . $this->name_template. '.' . $this->template->extension;
+        $fileTemplateName = $this->name_template. '.' . $this->template->extension;
         $this->template->saveAs('export_file/' . $fileTemplateName);
-        $fileTemplateNote = $this->type_template . '_' . $this->name_template. '.' . $this->note_template->extension;
+        $fileTemplateNote = $this->name_template. '.' . $this->note_template->extension;
         $this->note_template->saveAs('export_file/' . $fileTemplateNote);
         return true;
     }
@@ -90,9 +90,8 @@ class FormTemplate extends Model
      * Created : 17-07-2017
      */
     public function getListImageFiles(){
-        $fileName = $this->type_template;
         $list = [];
-        $listFile = FileHelper::findFiles(Yii::$app->params['folder_template'], ['only' => [$fileName . '_' . '*' . '.xlsx']]);
+        $listFile = FileHelper::findFiles(Yii::$app->params['folder_template'], ['only' => ['*' . '.xlsx']]);
         if (count($listFile) > 0) {
             foreach ($listFile as $key => $value) {
                 $list[] =  str_replace(Yii::$app->params['folder_template'], "", $value);

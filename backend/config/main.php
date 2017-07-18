@@ -47,7 +47,9 @@ return [
                 'project' => 'site/index',
                 'export/single/<id:\w+>' => 'export/single',
                 'export/multiple_project' => 'export/multiple_project',
-                'template/detail/<type:\w+>' => 'template/detail',
+                'export/index' => 'export/index',
+                //'template/detail/<type:\w+>' => 'template/detail',
+                'template/index' => 'template/index',
             ],
         ],
         'request' => [
