@@ -18,8 +18,7 @@
         "yiisoft/yii2": ">=2.0.6",
         "yiisoft/yii2-bootstrap": "*",
         "yiisoft/yii2-swiftmailer": "~2.0.0",
-        "phpoffice/phpexcel": "^1.8",
-        "moonlandsoft/yii2-phpexcel": "*",
+        "phpoffice/phpexcel": "^1.7.6",
         "sergeymakinen/yii2-config": "^2.0",
         "codemix/yii2-configloader": "^0.9.1",
         "2amigos/yii2-ckeditor-widget" : "~2.1"

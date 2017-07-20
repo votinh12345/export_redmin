@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "85e8b8f75470c2fec2cd265afa1f3bb4",
+    "content-hash": "7dcf0b6c6dded3d8a30093d1c89d43b6",
     "packages": [
         {
             "name": "2amigos/yii2-ckeditor-widget",
@@ -78,7 +78,7 @@
                 "shasum": ""
             },
             "require": {
-                "bower-asset/jquery": ">=1.9.1,<=3"
+                "bower-asset/jquery": ">=1.9.1,<4.0"
             },
             "type": "bower-asset-library",
             "extra": {
@@ -453,51 +453,6 @@
                 "html"
             ],
             "time": "2017-06-03T02:28:16+00:00"
-        },
-        {
-            "name": "moonlandsoft/yii2-phpexcel",
-            "version": "1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/moonlandsoft/yii2-phpexcel.git",
-                "reference": "9408d09abc7ff4828302dafd5ffb709314f14589"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/moonlandsoft/yii2-phpexcel/zipball/9408d09abc7ff4828302dafd5ffb709314f14589",
-                "reference": "9408d09abc7ff4828302dafd5ffb709314f14589",
-                "shasum": ""
-            },
-            "require": {
-                "phpoffice/phpexcel": "*",
-                "yiisoft/yii2": "*"
-            },
-            "type": "yii2-extension",
-            "autoload": {
-                "psr-4": {
-                    "moonland\\phpexcel\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Moh Khoirul Anam",
-                    "email": "moh.khoirul.anaam@gmail.com"
-                }
-            ],
-            "description": "Exporting PHP to Excel or Importing Excel to PHP",
-            "keywords": [
-                "excel",
-                "export",
-                "extension",
-                "import",
-                "xls",
-                "yii2"
-            ],
-            "time": "2015-09-06T07:50:33+00:00"
         },
         {
             "name": "phpoffice/phpexcel",
