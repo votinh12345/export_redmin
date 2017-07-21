@@ -106,12 +106,17 @@ class FormTemplate extends Model
      * Auth: HienNV6244
      * Created : 17-07-2017
      */
-    public function getListImageFiles(){
+    public function getListImageFiles($flag = true){
         $list = [];
         $listFile = FileHelper::findFiles(Yii::$app->params['folder_template'], ['only' => ['*' . '.xlsx']]);
         if (count($listFile) > 0) {
             foreach ($listFile as $key => $value) {
-                $list[] = substr(str_replace([Yii::$app->params['folder_template'], '.xlsx'], "", $value), 1);
+                $name = substr(str_replace([Yii::$app->params['folder_template'], '.xlsx'], "", $value), 1);
+                if (!$flag) {
+                    $list[$name] = $name;
+                } else {
+                    $list[] = $name;
+                }
             }
         }
         return $list;

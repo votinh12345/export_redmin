@@ -71,7 +71,7 @@ class ExportController extends Controller {
         $request = Yii::$app->request;
 
         $dataProvider = $modelFormExprort->getAllDataDetail();
-        $listFileTemplate = $formModelTemplate->getListImageFiles();
+        $listFileTemplate = $formModelTemplate->getListImageFiles(false);
         
         $param = $request->queryParams;
         if (isset($param['view'])) {

@@ -13,7 +13,8 @@ use PHPExcel_Style_NumberFormat;
 use PHPExcel_Style_Color;
 use ZipArchive;
 use PHPExcel_Worksheet;
-
+use yii\base\ErrorException;
+use yii\helpers\FileHelper;
 /**
  * Login form
  */
@@ -26,7 +27,7 @@ class FormExport extends Model {
 
     public function rules() {
         return [
-            [['sql'], 'required'],
+            [['sql', 'template'], 'required'],
         ];
     }
 
@@ -93,11 +94,8 @@ class FormExport extends Model {
             $command = $connection->createCommand($query);
             return $command->queryAll();
         }
-        $count = Yii::$app->db->createCommand($query)->queryScalar();
-
         $dataProvider = new SqlDataProvider([
             'sql' => $query,
-            //'totalCount' => $count,
             'sort' => [
                 'attributes' => [
                     'spent_on' => SORT_DESC
@@ -120,6 +118,12 @@ class FormExport extends Model {
     public function actionExportExcel() {
         $listData = $this->getAllDataDetail(false, false);
         if (count($listData) > 0) {
+            $fileConfig = Yii::$app->params['folder_template'] . $this->template . '.php';
+            $configExport = yii\helpers\ArrayHelper::merge(
+                [],
+                require($fileConfig)
+            );  
+            var_dump($config);die('111');
             $dataTotalByMember = $this->listTotalRecordByMember($listData);
             $fileName = Yii::$app->params['folderReport'] . 'template_d6_' . date('YmdHis') . '.xlsx';
             copy('export_file/template_d6.xlsx', $fileName);
