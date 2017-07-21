@@ -50,6 +50,7 @@ return [
                 'export/index' => 'export/index',
                 //'template/detail/<type:\w+>' => 'template/detail',
                 'template/index' => 'template/index',
+                'template/detail/<name:\w+>' => 'template/detail',
             ],
         ],
         'request' => [

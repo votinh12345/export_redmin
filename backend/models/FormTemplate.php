@@ -7,11 +7,14 @@ use yii\behaviors\TimestampBehavior;
 use yii\data\ActiveDataProvider;
 use yii\helpers\FileHelper;
 use yii\base\Model;
+use ZipArchive;
 /**
  * Login form
  */
 class FormTemplate extends Model
 {
+    const SCENARIO_ADD = 'add';
+    
     public static $TYPE_TEMPLATE = [
         'single' => 'Single Template',
         'multiple' => 'Multiple Template'
@@ -32,6 +35,7 @@ class FormTemplate extends Model
             [['note_template'], 'file', 'extensions' => 'php', 'maxSize'=> 1*1024*1024,
                 'tooBig' => \Yii::t('app', 'file size upload'), 'checkExtensionByMimeType' => false ,
                 'wrongExtension' => \Yii::t('app', 'Extension xlsx')],
+            ['name_template', 'validateNameTemplate', 'on' => self::SCENARIO_ADD],
         ];
     }
     /**
@@ -69,6 +73,19 @@ class FormTemplate extends Model
     }
     
     /*
+     * validate name template
+     * 
+     * Auth :
+     * Created : 21-07-2017
+     */
+    
+    public function validateNameTemplate($attribute) {
+        $listFile = FileHelper::findFiles(Yii::$app->params['folder_template'], ['only' => [$this->$attribute . '*' . '.xlsx']]);
+        if (count($listFile) > 0) {
+            $this->addError($attribute, \Yii::t('app', 'Template already exists!'));
+        }
+    }
+    /*
      * upload file
      * 
      * Auth : HienNV6244
@@ -98,5 +115,32 @@ class FormTemplate extends Model
             }
         }
         return $list;
+    }
+    
+    /*
+     * Download template
+     * 
+     * Auth : Hiennv6244
+     * Created : 21-07-2017
+     */
+    public function downloadTempate() {
+        $compress = new ZipArchive();
+        $compressFolder = Yii::$app->params['folder_template'] . $this->name_template. '.zip';
+        $compress->open($compressFolder, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $fileNameExcel = Yii::$app->params['folder_template'] . $this->name_template . '.xlsx';
+        $fileNamePhp = Yii::$app->params['folder_template'] . $this->name_template . '.php';
+        if (file_exists($fileNameExcel)) {
+            $compress->addFile($fileNameExcel);
+        }
+        if (file_exists($fileNameExcel)) {
+            $compress->addFile($fileNamePhp);
+        }
+        //download file
+        header("Content-type: application/zip"); 
+        header("Content-Disposition: attachment; filename=$compressFolder"); 
+        header("Pragma: no-cache"); 
+        header("Expires: 0"); 
+        readfile("$compressFolder");
+        return 0;
     }
 }

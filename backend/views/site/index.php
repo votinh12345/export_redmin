@@ -40,26 +40,6 @@ $this->title = 'List Project';
                                     'layout' => '<div class="dataTables_wrapper form-inline dt-bootstrap">{items}<div class="col-sm-5">{summary}</div>'
                                     . '<div class="col-sm-7"><div class="dataTables_paginate paging_simple_numbers">{pager}</div></div></div>',
                                     'summary' => '<div class="dataTables_info">ALL {totalCount} Item {begin} ～ {end}</div>',
-                                    'rowOptions'   => function ($model, $index, $widget, $grid) {
-                                        if ($index % 2 == 0) {
-                                                return [
-                                                    'id' => $model['id'],
-                                                    'class' => 'odd',
-                                                    'onclick' => 'location.href="'
-                                                        . Yii::$app->urlManager->createUrl('report/detail') 
-                                                        . '/"+(this.id);'
-                                                ];
-                                        } else {
-                                            return [
-                                                'id' => $model['id'],
-                                                'class' => 'even',
-                                                'onclick' => 'location.href="'
-                                                    . Yii::$app->urlManager->createUrl('report/detail') 
-                                                    . '/"+(this.id);'
-                                            ];
-                                        }
-
-                                    },
                                     'columns' => [
                                         [
                                             'attribute' => 'id',

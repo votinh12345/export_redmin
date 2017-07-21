@@ -1,43 +1,34 @@
-<blockquote>
-SELECT <br/>
-    `time_entries`.`spent_on`, <br/>
-    SUM(`time_entries`.`hours`) AS sum_hours,<br/>
-    `users`.`firstname`,<br/>
-    `users`.`lastname`,<br/>
-    CONCAT(`users`.`lastname` ,' ' , `users`.`firstname`) AS full_name,<br/>
-    GROUP_CONCAT(<br/>
-    CONCAT(<br/>
-    `time_entries`.`issue_id`,<br/>
-    ':',<br/>
-    `issues`.`subject`<br/>
-    ) SEPARATOR '\n'<br/>
-    ) AS list_issues<br/>
-FROM<br/>
-	`time_entries`<br/>
-INNER JOIN `users` ON users.id = time_entries.user_id<br/>
-INNER JOIN `issues` ON issues.id = time_entries.issue_id<br/>
-INNER JOIN `enumerations` ON enumerations.id = time_entries.activity_id<br/>
-WHERE<br/>
-	(<br/>
-		`time_entries`.`project_id` = '1'<br/>
-	)<br/>
-AND (<br/>
-	DATE_FORMAT(<br/>
-		time_entries.spent_on,<br/>
-		"%Y-%m-%d"<br/>
-	) >= '2017-06-01'<br/>
-)<br/>
-AND (<br/>
-	DATE_FORMAT(<br/>
-		time_entries.spent_on,<br/>
-		"%Y-%m-%d"<br/>
-	) <= '2017-06-30'<br/>
-)<br/>
-AND (`users`.`id` IN('5'))<br/>
-GROUP BY<br/>
-	`time_entries`.`spent_on`,<br/>
-	`users`.`firstname`,<br/>
-	`users`.`lastname`<br/>
-ORDER BY<br/>
-	`time_entries`.`spent_on` DESC<br/>
-</blockquote>
+<p><strong>SELECT</strong><br />
+&nbsp;&nbsp;&nbsp; `time_entries`.`spent_on`,<br />
+&nbsp;&nbsp;&nbsp; `time_entries`.`hours`,<br />
+&nbsp;&nbsp;&nbsp; `users`.`firstname`,<br />
+&nbsp;&nbsp;&nbsp; `users`.`lastname`,<br />
+&nbsp;&nbsp;&nbsp; `users`.`login`,<br />
+&nbsp;&nbsp;&nbsp; `projects`.`name`,<br />
+&nbsp;&nbsp;&nbsp; `issues`.`subject`<br />
+<strong>FROM</strong><br />
+&nbsp;&nbsp;&nbsp; `time_entries`<br />
+<strong>INNER JOIN</strong> `users` <strong>ON</strong> users.id = time_entries.user_id<br />
+<strong>INNER JOIN </strong>`issues` <strong>ON</strong> issues.id = time_entries.issue_id<br />
+<strong>INNER JOIN</strong> `enumerations` ON enumerations.id = time_entries.activity_id<br />
+<strong>INNER JOIN</strong> `projects` <strong>ON</strong> projects.id = time_entries.project_id<br />
+<strong>WHERE</strong><br />
+&nbsp;&nbsp;&nbsp; (<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `time_entries`.`project_id` <strong>IN </strong>(&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;)<br />
+&nbsp;&nbsp;&nbsp; )<br />
+<strong>AND </strong>(<br />
+&nbsp;&nbsp;&nbsp; <strong>DATE_FORMAT</strong>(<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time_entries.spent_on,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;%Y-%m-%d&quot;<br />
+&nbsp;&nbsp;&nbsp; ) &gt;= &#39;2017-06-01&#39;<br />
+)<br />
+<strong>AND </strong>(<br />
+&nbsp;&nbsp;&nbsp; <strong>DATE_FORMAT</strong>(<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time_entries.spent_on,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;%Y-%m-%d&quot;<br />
+&nbsp;&nbsp;&nbsp; ) &lt;= &#39;2017-06-30&#39;<br />
+)<br />
+<strong>ORDER BY</strong><br />
+&nbsp;&nbsp;&nbsp; `users`.`login` <strong>DESC</strong>,<br />
+&nbsp;&nbsp;&nbsp; `projects`.`name` <strong>DESC</strong>,<br />
+&nbsp;&nbsp;&nbsp; `time_entries`.`spent_on` <strong>ASC</strong></p>

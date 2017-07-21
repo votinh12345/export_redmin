@@ -31,16 +31,16 @@ $this->title = 'Export Excell';
         <!-- /.box-header -->
         <div class="box-body">
             <div class="row">
-                <?php
-                    $form = ActiveForm::begin([
-                                'action' => ['export/index/'],
-                                'method' => 'get',
-                                'options' => [
-                                    'class' => 'form-horizontal custom-form'
-                                ]
-                    ]);
-                ?>
                 <div class="col-md-12">
+                    <?php
+                        $form = ActiveForm::begin([
+                                    'action' => ['/'],
+                                    'method' => 'get',
+                                    'options' => [
+                                        'class' => 'form-horizontal custom-form'
+                                    ]
+                        ]);
+                    ?>
                     <div class="col-md-6">
                         <?= $form->field($modelFormExprort, 'sql_single_project')->widget(CKEditor::className(), [
                             'options' => ['rows' => 10, 'readOnly' => true],
@@ -56,7 +56,16 @@ $this->title = 'Export Excell';
                             'clientOptions' => ['height' => 300]
                         ]) ?>
                     </div>
-                    
+                    <?php ActiveForm::end(); ?>
+                    <?php
+                        $form = ActiveForm::begin([
+                                    'action' => ['export/index/'],
+                                    'method' => 'get',
+                                    'options' => [
+                                        'class' => 'form-horizontal custom-form'
+                                    ]
+                        ]);
+                    ?>
                     <div class="col-md-12">
                         <?= $form->field($modelFormExprort, 'sql')->widget(CKEditor::className(), [
                             'options' => ['rows' => 6],
@@ -76,8 +85,8 @@ $this->title = 'Export Excell';
                         <?= Html::submitButton('Export',[ 'name'=>'export', 'value' => 'export', 'class' => 'btn btn-success btn-lg','data-pjax' => 0, 'id' => 'export']) ?>
                         <a class="btn btn-warning btn-lg" href="<?php echo Url::to(['export/index']); ?>">Clear</a>
                     </div>
+                    <?php ActiveForm::end(); ?>
                 </div>
-                <?php ActiveForm::end(); ?>
             </div>
             <hr>
             

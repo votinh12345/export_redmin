@@ -119,15 +119,17 @@ class FormExport extends Model {
 
     public function actionExportExcel() {
         $listData = $this->getAllDataDetail(false, false);
-        $this->listTotalRecordByMember($listData);
         if (count($listData) > 0) {
             $dataTotalByMember = $this->listTotalRecordByMember($listData);
             $fileName = Yii::$app->params['folderReport'] . 'template_d6_' . date('YmdHis') . '.xlsx';
             copy('export_file/template_d6.xlsx', $fileName);
             $objPHPExcel = new \PHPExcel();
             $objTpl = PHPExcel_IOFactory::load($fileName);
-            $userName = '';
+            $i = $j = $k = 0;
+            $userName = $userName1 = $userName2 = '';
             $listRecordAccount = [];
+            $starDataRow = 8;
+            //clone sheet
             foreach ($listData as $key => $value) {
                 if ($userName != $value['login']) {
                     $userName = $value['login'];
@@ -140,9 +142,13 @@ class FormExport extends Model {
                     unset($sheet2);
                 }
             }
-            $i = 0;
-            $starDataRow = 8;
-            $userName1 = '';
+            //insert sheet Summary
+            $objTpl->setActiveSheetIndexByName('Summary');
+            foreach ($dataTotalByMember as $key => $value) {
+                $objTpl->getActiveSheet()->setCellValue('B'.($starDataRow + $k), $key);
+                $k++;
+            }
+            //insert data member of sheet
             foreach ($listData as $key => $value) {
                 if ($userName1 != $value['login']) {
                     $userName1 = $value['login'];
@@ -150,7 +156,6 @@ class FormExport extends Model {
                     $objTpl->setActiveSheetIndexByName($userName1);
                     $i = 0;
                 }
-                //insert data
                 $i++;
                 $objTpl->getActiveSheet()->insertNewRowBefore($starDataRow + $i, 1);
                 $objTpl->getActiveSheet()->duplicateStyle($objTpl->getActiveSheet()->getStyle('A' . $starDataRow), 'A' . ($starDataRow + 1));
@@ -164,8 +169,7 @@ class FormExport extends Model {
                 $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['day'][$day] . ($starDataRow + $i - 1), $value['hours']);
                 
             }
-            $j = 0;
-            $userName2 = '';
+            //insert project
             foreach ($listData as $key => $value) {
                 if ($userName2 != $value['login']) {
                     $j = 0;
