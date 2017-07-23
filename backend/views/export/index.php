@@ -6,6 +6,21 @@ use yii\widgets\ActiveForm;
 use yii\widgets\Pjax;
 use yii\web\Session;
 use dosamigos\ckeditor\CKEditor;
+if ($modelFormExprort->template) {
+    $fileConfig = Yii::$app->params['folder_template'] . $modelFormExprort->template . '.php';
+    $configExport = yii\helpers\ArrayHelper::merge(
+        [],
+        require($fileConfig)
+    );
+    $columnView = $configExport['filed_export'];
+} else {
+    $columnView = [
+                    'spent_on',
+                    'full_name',
+                    'subject'
+            ];
+}
+
 
 $this->title = 'Export Excell';
 ?>
@@ -113,69 +128,7 @@ $this->title = 'Export Excell';
                                     <?=
                                     GridView::widget([
                                         'dataProvider' => $dataProvider,
-                                        'layout' => '<div class="mBoxitem_listinfo">{summary}</div>{items}<div class="mBoxitem_listinfo">'
-                                        . '<div id="paging" class="light-theme simple-pagination">{pager}</div></div>',
-                                        'summary' => '<div class="pageList_data"><strong>ALL {totalCount} Item {begin} ～ {end}</strong>'
-                                        . '</div><div class="pageList_del"><div class="pageList_del_item"></div></div>',
-                                        'columns' => [
-                                            [
-                                                'attribute' => 'spent_on',
-                                                'label' => 'Date',
-                                                'content' => function ($data) {
-                                                    return $data['spent_on'];
-                                                }
-                                            ],
-                                            [
-                                                'attribute' => 'full_name',
-                                                'label' => 'User',
-                                                'content' => function ($data) {
-                                                    if (isset($data['full_name'])) {
-                                                        return $data['full_name'];
-                                                    }
-                                                    return '';
-                                                }
-                                            ],
-//                                            [
-//                                                'attribute' => 'name_activity',
-//                                                'label' => 'Activity',
-//                                                'content' => function ($data) {
-//                                                    return $data['name_activity'];
-//                                                }
-//                                            ],
-//                                            [
-//                                                'attribute' => 'subject',
-//                                                'label' => 'Issue',
-//                                                'content' => function ($data) {
-//                                                    return $data['subject'];
-//                                                }
-//                                            ],
-//                                            [
-//                                                'attribute' => 'comments',
-//                                                'label' => 'Comment',
-//                                                'content' => function ($data) {
-//                                                    return $data['comments'];
-//                                                }
-//                                            ],
-//                                            [
-//                                                'attribute' => 'hours',
-//                                                'label' => 'Hours',
-//                                                'content' => function ($data) {
-//                                                    return $data['hours'];
-//                                                }
-//                                            ]
-                                        ],
-                                        'tableOptions' => ['class' => 'table table-bordered table-hover'],
-                                        'pager' => [
-                                            'prevPageLabel' => 'Prev',
-                                            'nextPageLabel' => 'Next',
-                                            'activePageCssClass' => 'paginate_button active',
-                                            'disabledPageCssClass' => 'paginate_button previous disabled',
-                                            'options' => [
-                                                'class' => 'pagination',
-                                                'id' => 'pager-container',
-                                            ],
-                                        ],
-                                    ]);
+                                        'columns' => $columnView]);
                                     ?>
                                     <?php Pjax::end(); ?>
                                 <?php endif; ?>
