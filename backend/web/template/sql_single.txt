@@ -1,15 +1,16 @@
 <p><strong>SELECT</strong><br />
 &nbsp;&nbsp; &nbsp;`time_entries`.`spent_on`,<br />
-&nbsp;&nbsp; &nbsp;<strong>SUM</strong>(`time_entries`.`hours`) <strong>AS </strong>sum_hours,<br />
+&nbsp;&nbsp; &nbsp;SUM(`time_entries`.`hours`) AS sum_hours,<br />
+&nbsp;&nbsp; &nbsp;`users`.`login`,<br />
 &nbsp;&nbsp; &nbsp;`users`.`firstname`,<br />
 &nbsp;&nbsp; &nbsp;`users`.`lastname`,<br />
-&nbsp;&nbsp; &nbsp;<strong>CONCAT </strong>(<br />
+&nbsp;&nbsp; &nbsp;<strong>CONCAT</strong> (<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;`users`.`lastname`,<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&#39; &#39;,<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;`users`.`firstname`<br />
-&nbsp;&nbsp; &nbsp;) <strong>AS </strong>full_name,<br />
-&nbsp;&nbsp; <strong>&nbsp;GROUP_CONCAT </strong>(<br />
-&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<strong>CONCAT </strong>(<br />
+&nbsp;&nbsp; &nbsp;) <strong>AS</strong> full_name,<br />
+&nbsp;&nbsp; &nbsp;<strong>GROUP_CONCAT </strong>(<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<strong>CONCAT</strong> (<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;`time_entries`.`issue_id`,<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&#39;:&#39;,<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;`issues`.`subject`<br />
@@ -17,15 +18,15 @@
 &nbsp;&nbsp; &nbsp;) <strong>AS </strong>list_issues<br />
 <strong>FROM</strong><br />
 &nbsp;&nbsp; &nbsp;`time_entries`<br />
-<strong>INNER JOIN</strong> `users` <strong>ON </strong>users.id = time_entries.user_id<br />
-<strong>INNER JOIN</strong> `issues` <strong>ON </strong>issues.id = time_entries.issue_id<br />
-<strong>INNER JOIN </strong>`enumerations` <strong>ON </strong>enumerations.id = time_entries.activity_id<br />
+<strong>INNER JOIN</strong> `users` <strong>ON</strong> users.id = time_entries.user_id<br />
+<strong>INNER JOIN</strong> `issues` <strong>ON</strong> issues.id = time_entries.issue_id<br />
+<strong>INNER JOIN</strong> `enumerations` <strong>ON</strong> enumerations.id = time_entries.activity_id<br />
 <strong>WHERE</strong><br />
 &nbsp;&nbsp; &nbsp;(<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;`time_entries`.`project_id` = &#39;1&#39;<br />
 &nbsp;&nbsp; &nbsp;)<br />
 <strong>AND </strong>(<br />
-&nbsp;&nbsp; &nbsp;<strong>DATE_FORMAT</strong>(<br />
+&nbsp;&nbsp; &nbsp;<strong>DATE_FORMAT </strong>(<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;time_entries.spent_on,<br />
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&quot;%Y-%m-%d&quot;<br />
 &nbsp;&nbsp; &nbsp;) &gt;= &#39;2017-06-01&#39;<br />
@@ -36,10 +37,10 @@
 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&quot;%Y-%m-%d&quot;<br />
 &nbsp;&nbsp; &nbsp;) &lt;= &#39;2017-06-30&#39;<br />
 )<br />
-<strong>AND </strong>(`users`.`id` IN(&#39;5&#39;))<br />
 <strong>GROUP BY</strong><br />
 &nbsp;&nbsp; &nbsp;`time_entries`.`spent_on`,<br />
 &nbsp;&nbsp; &nbsp;`users`.`firstname`,<br />
 &nbsp;&nbsp; &nbsp;`users`.`lastname`<br />
 <strong>ORDER BY</strong><br />
+&nbsp;&nbsp; &nbsp;`users`.`login` <strong>DESC</strong>,<br />
 &nbsp;&nbsp; &nbsp;`time_entries`.`spent_on` <strong>DESC</strong></p>

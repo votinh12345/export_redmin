@@ -9,8 +9,11 @@ return [
     ],
     //file bắt buộc
     'filed_export' => [
+        'login',
         'spent_on',
         'firstname',
         'lastname',
+        'subject',
+        'name'
     ]
 ];

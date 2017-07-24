@@ -26,6 +26,7 @@ return [
     ],
     //file bắt buộc
     'filed_export' => [
+        'login',
         'spent_on',
         'full_name',
         'sum_hours',

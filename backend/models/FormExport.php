@@ -260,6 +260,44 @@ class FormExport extends Model {
         $typeCopy = $configExport['table_main']['type_copy'];
         switch ($typeCopy) {
             case 0:
+                $fileName = Yii::$app->params['folderReport'] . $nameCopy . '.xlsx';
+                $objPHPExcel = new \PHPExcel();
+                $objTpl = PHPExcel_IOFactory::load($fileName);
+                //insert name member
+                $userName = $rootId = $userName1= '';
+                $i = $j = 0;
+                $listUser = [];
+                //insert member
+                foreach ($listData as $key => $value) {
+                    if (!array_key_exists($value[$configExport['table_main']['multiple']], $listUser)) {
+                        $userName = $value[$configExport['table_main']['multiple']];
+                        $i ++;
+                        $listUser[$userName] = $i;
+                        $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['column'][$i] . '1', $value[$configExport['table_main']['multiple']]);
+                    }
+                }
+                //insert data
+                $starRow = 1;
+                foreach ($listData as $key => $value) {
+                    if ($rootId != $value['root_id']) {
+                        $rootId = $value['root_id'];
+                        $j ++;
+                        $starDataRow = $starRow + $j;
+                        $objTpl->getActiveSheet()->setCellValue('B'.$starDataRow, $value['root_id']);
+                        $objTpl->getActiveSheet()->setCellValue('C'.$starDataRow, $value['subject_root']);
+                        $userName1 = $value[$configExport['table_main']['multiple']];
+                        $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['column'][$listUser[$userName1]].$starDataRow, $value['sum_hours']);
+                    } else {
+                        if ($userName1 != $value[$configExport['table_main']['multiple']]) {
+                            $userName1 = $value[$configExport['table_main']['multiple']];
+                            $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['column'][$listUser[$userName1]].$starDataRow, $value['sum_hours']);
+                        }
+                    }
+                }
+                //save file excel
+                $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');
+                $objWriter->save($fileName);
+                unset($objWriter);
                 break;
             case 1 :
                 //created folder zip
@@ -307,7 +345,6 @@ class FormExport extends Model {
                 $objTpl = PHPExcel_IOFactory::load($fileName);
                 $i = $j = $k = 0;
                 $userName = $userName1 = $userName2 = '';
-                $listRecordAccount = [];
                 $starDataRow = 8;
                 //insert sheet Summary
                 $objTpl->setActiveSheetIndexByName('Summary');
@@ -334,7 +371,6 @@ class FormExport extends Model {
                     $objTpl->getActiveSheet()->setCellValue('I' . ($starDataRow + $i - 1), '=SUM(K'. ($starDataRow + $i - 1) .':AO' . ($starDataRow + $i - 1) . ')');
                     $day = (int)date("d", strtotime($value['spent_on']));
                     $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['day'][$day] . ($starDataRow + $i - 1), $value['hours']);
-
                 }
                 //insert project
                 foreach ($listData as $key => $value) {
@@ -380,6 +416,13 @@ class FormExport extends Model {
         $typeCopy = $configExport['table_main']['type_copy'];
         switch ($typeCopy) {
             case 0 :
+                $fileName = Yii::$app->params['folderReport'] . $nameCopy . '.xlsx';
+                header("Content-type: application/xlsx"); 
+                header("Content-Disposition: attachment; filename=$fileName"); 
+                header("Pragma: no-cache"); 
+                header("Expires: 0"); 
+                readfile("$fileName");
+                break;
                 break;
             case 1 :
                 $compressFolder = Yii::$app->params['folderReport'] . $nameCopy . '.zip';
