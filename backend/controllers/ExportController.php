@@ -79,13 +79,7 @@ class ExportController extends Controller {
             $dataProvider = $modelFormExprort->getAllDataDetail(false);
         } else if (isset($param['export'])) {
             $modelFormExprort->setAttributes($param['FormExport']);
-            if (!$modelFormExprort->checkSql()) {
-                Yii::$app->session->setFlash('message', 'Field config and file return SQL not map!');
-                return Yii::$app->response->redirect(['/export/index']);
-            } else {
-                $modelFormExprort->actionExportExcel();
-                $dataProvider = $modelFormExprort->getAllDataDetail(false);
-            }
+            $modelFormExprort->actionExportExcel();
         }
         return $this->render('index', [
                 'modelFormExprort' => $modelFormExprort,

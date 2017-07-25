@@ -84,10 +84,11 @@ class FormExport extends Model {
             $query .= " ORDER BY";
             $query .= "`time_entries`.`spent_on` DESC";
         } else {
-            $query = str_replace("&#39;", "'", html_entity_decode(strip_tags($this->sql)));
-            $query = str_replace("&#039;", "'", $query);
-            $query = str_replace("/\s+/", " ", $query);
-            $query = trim(preg_replace('/(\t|\n|\v|\f|\r| |\xC2\x85|\xc2\xa0|\xe1\xa0\x8e|\xe2\x80[\x80-\x8D]|\xe2\x80\xa8|\xe2\x80\xa9|\xe2\x80\xaF|\xe2\x81\x9f|\xe2\x81\xa0|\xe3\x80\x80|\xef\xbb\xbf)+/', ' ', $query));
+            $query = $this->sql;
+//            $query = str_replace("&#39;", "'", html_entity_decode(strip_tags($this->sql)));
+//            $query = str_replace("&#039;", "'", $query);
+//            $query = str_replace("/\s+/", " ", $query);
+//            $query = trim(preg_replace('/(\t|\n|\v|\f|\r| |\xC2\x85|\xc2\xa0|\xe1\xa0\x8e|\xe2\x80[\x80-\x8D]|\xe2\x80\xa8|\xe2\x80\xa9|\xe2\x80\xaF|\xe2\x81\x9f|\xe2\x81\xa0|\xe3\x80\x80|\xef\xbb\xbf)+/', ' ', $query));
         }
 
         if (!$flagReturn) {
@@ -120,10 +121,10 @@ class FormExport extends Model {
         $listData = $this->getAllDataDetail(false, false);
         if (count($listData) > 0) {
             //check map file config and sql
-            if (!$this->checkSql()) {
-                Yii::$app->session->setFlash('message', 'Field config and file return SQL not map!');
-                return Yii::$app->response->redirect(['/export/index']);
-            }
+//            if (!$this->checkSql()) {
+//                Yii::$app->session->setFlash('message', 'Field config and file return SQL not map!');
+//                return Yii::$app->response->redirect(['/export/index']);
+//            }
             //copy file or copy sheet
             $fileConfig = Yii::$app->params['folder_template'] . $this->template . '.php';
             $configExport = yii\helpers\ArrayHelper::merge(
@@ -146,7 +147,6 @@ class FormExport extends Model {
         $data = [];
         $listMember = [];
         $member = '';
-        
         if (count($listData) > 0) {
             foreach ($listData as $key => $value) {
                 if (!in_array($value['login'], $listMember)) {
@@ -263,36 +263,22 @@ class FormExport extends Model {
                 $fileName = Yii::$app->params['folderReport'] . $nameCopy . '.xlsx';
                 $objPHPExcel = new \PHPExcel();
                 $objTpl = PHPExcel_IOFactory::load($fileName);
-                //insert name member
-                $userName = $rootId = $userName1= '';
-                $i = $j = 0;
-                $listUser = [];
-                //insert member
-                foreach ($listData as $key => $value) {
-                    if (!array_key_exists($value[$configExport['table_main']['multiple']], $listUser)) {
-                        $userName = $value[$configExport['table_main']['multiple']];
-                        $i ++;
-                        $listUser[$userName] = $i;
-                        $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['column'][$i] . '1', $value[$configExport['table_main']['multiple']]);
-                    }
-                }
                 //insert data
-                $starRow = 1;
+                $starRow = $configExport['row']['row_start'];
                 foreach ($listData as $key => $value) {
-                    if ($rootId != $value['root_id']) {
-                        $rootId = $value['root_id'];
-                        $j ++;
-                        $starDataRow = $starRow + $j;
-                        $objTpl->getActiveSheet()->setCellValue('B'.$starDataRow, $value['root_id']);
-                        $objTpl->getActiveSheet()->setCellValue('C'.$starDataRow, $value['subject_root']);
-                        $userName1 = $value[$configExport['table_main']['multiple']];
-                        $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['column'][$listUser[$userName1]].$starDataRow, $value['sum_hours']);
-                    } else {
-                        if ($userName1 != $value[$configExport['table_main']['multiple']]) {
-                            $userName1 = $value[$configExport['table_main']['multiple']];
-                            $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['column'][$listUser[$userName1]].$starDataRow, $value['sum_hours']);
+                    //set value row row_special
+                    if ($configExport['table_main']['cell_special'] && count($configExport['table_main']['cell_special']) > 0) {
+                        foreach ($configExport['table_main']['cell_special'] as $key1 => $value1) {
+                            if ($value1['flag_db'] == 0) {
+                                $objTpl->getActiveSheet()->setCellValue($value1['position'], $value1['value']);
+                            } else {
+                                $objTpl->getActiveSheet()->setCellValue($value1['position'], $value[$value1['value']]);
+                            }
                         }
                     }
+                    //insert roow data
+                    $this->insertRow($objTpl, $value, $configExport, $starRow);
+                    $starRow++;
                 }
                 //save file excel
                 $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');
@@ -305,17 +291,23 @@ class FormExport extends Model {
                 $compressFolder = Yii::$app->params['folderReport'] . $nameCopy . '.zip';
                 $compress->open($compressFolder, ZipArchive::CREATE | ZipArchive::OVERWRITE);
                 $userName = '';
+                $starRow = $configExport['row']['row_start'];
                 foreach ($listData as $key => $value) {
                     $objPHPExcel = new \PHPExcel();
                     if ($userName != $value[$configExport['table_main']['multiple']]) {
                         $userName = $value[$configExport['table_main']['multiple']];
+                        $starRow = $configExport['row']['row_start'];
                         $fileName = Yii::$app->params['folderReport'] . $nameCopy . '/' .$this->template. '_' . $value[$configExport['table_main']['multiple']] . '.xlsx';
                         $objTpl = PHPExcel_IOFactory::load($fileName);
                         $objTpl->setActiveSheetIndex(0);
+                    } else {
+                        //insert row
+                        $starRow = $starRow + 1;
                     }
+                    $this->insertRow($objTpl, $value, $configExport, $starRow);
                     //set value row row_special
-                    if ($configExport['table_main']['row_special'] && count($configExport['table_main']['row_special']) > 0) {
-                        foreach ($configExport['table_main']['row_special'] as $key1 => $value1) {
+                    if ($configExport['table_main']['cell_special'] && count($configExport['table_main']['cell_special']) > 0) {
+                        foreach ($configExport['table_main']['cell_special'] as $key1 => $value1) {
                             if ($value1['flag_db'] == 0) {
                                 $objTpl->getActiveSheet()->setCellValue($value1['position'], $value1['value']);
                             } else {
@@ -323,14 +315,8 @@ class FormExport extends Model {
                             }
                         }
                     }
-                    //insert row
-                    if ($configExport['cells'] && count($configExport['cells']) > 0) {
-                        foreach ($configExport['cells'] as $key1 => $value1) {
-                            $row = (int)date("d", strtotime($value[$value1['value_relation']]));
-                            $rowWrite = $value1['startRow'] + $row;
-                            $objTpl->getActiveSheet()->setCellValue($value1['position'].$rowWrite, $value[$value1['value']]);
-                        }
-                    }
+                    
+                    //save file
                     $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');
                     $objWriter->save($fileName);
                     $compress->addFile($fileName);
@@ -339,59 +325,58 @@ class FormExport extends Model {
                 unset($objWriter);
                 break;
             case 2 :
-                $dataTotalByMember = $this->listTotalRecordByMember($listData);
                 $fileName = Yii::$app->params['folderReport'] . $nameCopy . '.xlsx';
                 $objPHPExcel = new \PHPExcel();
                 $objTpl = PHPExcel_IOFactory::load($fileName);
                 $i = $j = $k = 0;
                 $userName = $userName1 = $userName2 = '';
-                $starDataRow = 8;
-                //insert sheet Summary
-                $objTpl->setActiveSheetIndexByName('Summary');
-                foreach ($dataTotalByMember as $key => $value) {
-                    $objTpl->getActiveSheet()->setCellValue('B'.($starDataRow + $k), $key);
-                    $k++;
+                $starRow = $configExport['row']['row_start'];
+                //insert row special
+                if ($configExport['row_special']) {
+                    $starDataRowSpecial = $configExport['row_special']['row_start'];
+                    foreach ($listData as $key => $value) {
+                        if ($userName2 != $value['login']) {
+                            $starDataRowSpecial = $configExport['row_special']['row_start'];
+                            $j = 0;
+                            $projectName = '';
+                            $userName2 = $value['login'];
+                            //set active sheet
+                            $objTpl->setActiveSheetIndexByName($userName2);
+                        } else {
+                            $starDataRowSpecial ++;
+                        }
+                        //insert project
+                        if ($projectName != $value['name']) {
+                            $j++;
+                            $projectName = $value['name'];
+                            $rowProject = $starDataRowSpecial + $j + 4;
+                            $objTpl->getActiveSheet()->setCellValue($configExport['cells']['row_special']['positon_start'].$rowProject, $projectName);
+                        }
+                    }
                 }
                 //insert data member of sheet
+                $dataTotalByMember = $this->listTotalRecordByMember($listData);
                 foreach ($listData as $key => $value) {
                     if ($userName1 != $value['login']) {
                         $userName1 = $value['login'];
+                        $starRow = $configExport['row']['row_start'];
                         //set active sheet
                         $objTpl->setActiveSheetIndexByName($userName1);
                         $i = 0;
+                    } else {
+                        //insert row
+                        $this->insertRow($objTpl, $value, $configExport, $starRow);
+                        $starRow++;
                     }
-                    $i++;
-                    $objTpl->getActiveSheet()->insertNewRowBefore($starDataRow + $i, 1);
-                    $objTpl->getActiveSheet()->duplicateStyle($objTpl->getActiveSheet()->getStyle('A' . $starDataRow), 'A' . ($starDataRow + 1));
-                    $objTpl->getActiveSheet()->mergeCells('B'. ($starDataRow + $i) . ':D' . ($starDataRow + $i));
-                    $objTpl->getActiveSheet()->mergeCells('E'. ($starDataRow + $i) .':H' . ($starDataRow + $i));
-                    $objTpl->getActiveSheet()->mergeCells('I'. ($starDataRow + $i) .':J' . ($starDataRow + $i));
-                    $objTpl->getActiveSheet()->setCellValue('A' . ($starDataRow + $i - 1), $value['name']);
-                    $objTpl->getActiveSheet()->setCellValue('B' . ($starDataRow + $i - 1), $value['subject']);
-                    $objTpl->getActiveSheet()->setCellValue('I' . ($starDataRow + $i - 1), '=SUM(K'. ($starDataRow + $i - 1) .':AO' . ($starDataRow + $i - 1) . ')');
-                    $day = (int)date("d", strtotime($value['spent_on']));
-                    $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['day'][$day] . ($starDataRow + $i - 1), $value['hours']);
+                    if ($configExport['cells']['delete_row']) {
+                        
+                    }
                 }
-                //insert project
-                foreach ($listData as $key => $value) {
-                    if ($userName2 != $value['login']) {
-                        $j = 0;
-                        $projectName = '';
-                        $userName2 = $value['login'];
-                        $totalData = $dataTotalByMember[$userName2];
-                        //set active sheet
-                        $objTpl->setActiveSheetIndexByName($userName2);
-                    }
-                    //insert project
-                    if ($projectName != $value['name']) {
-                        $j++;
-                        $projectName = $value['name'];
-                        $rowProject = $totalData + $starDataRow + $j + 4;
-                        $objTpl->getActiveSheet()->setCellValue('E'.$rowProject, $projectName);
-                        for ($i = 1; $i <= 31; $i++) {
-                            $rowFomular = $totalData + $starDataRow + 1;
-                            $objTpl->getActiveSheet()->setCellValue(Yii::$app->params['day'][$i].$rowProject, '=SUMIFS('.Yii::$app->params['day'][$i].'$' . $starDataRow . ':'.Yii::$app->params['day'][$i].'$'. $rowFomular. ',$A$'.$starDataRow.':$A$'.$rowFomular.',$E'.$rowProject.')');
-                        }
+                //remove row
+                $totalRemove = 31 - $endDayMonth;
+                if (count($totalRemove) > 0) {
+                    for($i = 0; $i < count($totalRemove); $i++) {
+                        $objTpl->getActiveSheet()->removeRow($endRow-$i);
                     }
                 }
                 //save file excel
@@ -406,6 +391,26 @@ class FormExport extends Model {
         return true;
     }
     
+    /*
+     * Insert row data
+     * 
+     * Auth : HienNV
+     * Created : 25-07-2017
+     */
+    public function insertRow($objTpl, $value, $configExport, $starRow){
+        $j = 0;
+        $positionColumn = array_search($configExport['row']['positon_start'], Yii::$app->params['column_main']);
+        foreach ($value as $key1 => $value1) {
+            $cell = Yii::$app->params['column_main'][$positionColumn] . $starRow;
+            $positionColumn ++ ;
+            $objTpl->getActiveSheet()->setCellValue($cell, $value1);
+            $j++;
+            if ($configExport['row']['total_column_export'] < $j) {
+                break;
+            }
+        }
+        return true;
+    }
     /*
      * Download file
      * 

@@ -82,11 +82,8 @@ $this->title = 'Export Excell';
                         ]);
                     ?>
                     <div class="col-md-12">
-                        <?= $form->field($modelFormExprort, 'sql')->widget(CKEditor::className(), [
-                            'options' => ['rows' => 6],
-                            'preset' => 'basic',
-                            'clientOptions' => ['height' => 300]
-                        ]) ?>
+                        <?= $form->field($modelFormExprort, 'sql')->textarea(['rows' => '20']);?>
+                        
                     </div>
                     <div class="col-md-12">
                         <div class="form-group">

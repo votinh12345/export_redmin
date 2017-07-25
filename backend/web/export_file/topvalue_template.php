@@ -3,9 +3,10 @@
 return [
     //file bắt buộc
     'table_main' => [
-        'multiple' => 'login',
+        'multiple' => '',
         'type_copy' => 0, // 0 : tạo thêm file, 1:  tạo thêm nhiều file, 2 :  tạo thêm sheet
-        'base_sheet' => 'sample' //khi clone sheet cần
+        'base_sheet' => '', //khi clone sheet cần,
+        'cell_special' => []
     ],
     //file bắt buộc
     'filed_export' => [
@@ -14,11 +15,16 @@ return [
         'subject_root',
         'sum_hours'
     ],
-    'cells' => [
-        'member' => [
-            'value' => 'login',
-            'startRow' => '1',
-            'columnStart' => 'D'
-        ]
+    'row' => [
+        'positon_start' => 'A',
+        'row_start' => 1,
+        'row_end' => null,
+        'delete_row' => false,
+        'total_column_export' => 7
+    ],
+    'row_special' => [
+        'positon_start' => 'D',
+        'row_start' => 12,
+        'total_column_export' => 7
     ]
 ];
