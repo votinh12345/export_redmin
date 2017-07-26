@@ -90,7 +90,6 @@ class FormExport extends Model {
 //            $query = str_replace("/\s+/", " ", $query);
 //            $query = trim(preg_replace('/(\t|\n|\v|\f|\r| |\xC2\x85|\xc2\xa0|\xe1\xa0\x8e|\xe2\x80[\x80-\x8D]|\xe2\x80\xa8|\xe2\x80\xa9|\xe2\x80\xaF|\xe2\x81\x9f|\xe2\x81\xa0|\xe3\x80\x80|\xef\xbb\xbf)+/', ' ', $query));
         }
-
         if (!$flagReturn) {
             $connection = Yii::$app->getDb();
             $command = $connection->createCommand($query);
@@ -120,11 +119,6 @@ class FormExport extends Model {
     public function actionExportExcel() {
         $listData = $this->getAllDataDetail(false, false);
         if (count($listData) > 0) {
-            //check map file config and sql
-//            if (!$this->checkSql()) {
-//                Yii::$app->session->setFlash('message', 'Field config and file return SQL not map!');
-//                return Yii::$app->response->redirect(['/export/index']);
-//            }
             //copy file or copy sheet
             $fileConfig = Yii::$app->params['folder_template'] . $this->template . '.php';
             $configExport = yii\helpers\ArrayHelper::merge(
@@ -228,6 +222,9 @@ class FormExport extends Model {
                 $objPHPExcel = new \PHPExcel();
                 $objTpl = PHPExcel_IOFactory::load($fileName);
                 $userName = '';
+                $dataTotalByMember = $this->listTotalRecordByMember($listData);
+                $endRow = $configExport['row']['row_end'];
+                $listUser = [];
                 foreach ($listData as $key => $value) {
                     if ($userName != $value[$configExport['table_main']['multiple']]) {
                         $userName = $value[$configExport['table_main']['multiple']];
@@ -235,8 +232,22 @@ class FormExport extends Model {
                         $sheet2 = clone $sheet1;
                         $sheet_title = $userName;
                         $sheet2->setTitle($sheet_title);
-                        $objTpl->addSheet($sheet2,4);
+                        $objTpl->addSheet($sheet2,3);
                         unset($sheet2);
+                        $listUser[] = $userName;
+                    } 
+                }
+                //remove row
+                if ($configExport['row']['delete_row']) {
+                    foreach ($listUser as $key => $value) {
+                        $objTpl->setActiveSheetIndexByName($value);
+                        $totalData = $dataTotalByMember[$value];
+                        $totalRemove =  $totalData + $configExport['row']['row_start'];
+                        if ($totalRemove < $endRow) {
+                            for($i = $totalRemove; $i < $endRow; $i++) {
+                                $objTpl->getActiveSheet()->removeRow($totalRemove, 1);
+                            }
+                        }
                     }
                 }
                 //save file excel
@@ -328,18 +339,22 @@ class FormExport extends Model {
                 $fileName = Yii::$app->params['folderReport'] . $nameCopy . '.xlsx';
                 $objPHPExcel = new \PHPExcel();
                 $objTpl = PHPExcel_IOFactory::load($fileName);
+                $dataTotalByMember = $this->listTotalRecordByMember($listData);
                 $i = $j = $k = 0;
                 $userName = $userName1 = $userName2 = '';
                 $starRow = $configExport['row']['row_start'];
                 //insert row special
                 if ($configExport['row_special']) {
-                    $starDataRowSpecial = $configExport['row_special']['row_start'];
                     foreach ($listData as $key => $value) {
                         if ($userName2 != $value['login']) {
+                            $userName2 = $value['login'];
                             $starDataRowSpecial = $configExport['row_special']['row_start'];
+                            $totalData = $dataTotalByMember[$userName2];
+                            if ($configExport['row']['delete_row']) {
+                                $starDataRowSpecial = $starDataRowSpecial - ($configExport['row']['row_end'] - ($totalData + $configExport['row']['row_start']));
+                            }
                             $j = 0;
                             $projectName = '';
-                            $userName2 = $value['login'];
                             //set active sheet
                             $objTpl->setActiveSheetIndexByName($userName2);
                         } else {
@@ -347,37 +362,25 @@ class FormExport extends Model {
                         }
                         //insert project
                         if ($projectName != $value['name']) {
-                            $j++;
                             $projectName = $value['name'];
-                            $rowProject = $starDataRowSpecial + $j + 4;
-                            $objTpl->getActiveSheet()->setCellValue($configExport['cells']['row_special']['positon_start'].$rowProject, $projectName);
+                            $rowProject = $starDataRowSpecial + $j;
+                            $objTpl->getActiveSheet()->setCellValue($configExport['row_special']['positon_start'].$rowProject, $projectName);
+                            $j++;
                         }
                     }
                 }
                 //insert data member of sheet
-                $dataTotalByMember = $this->listTotalRecordByMember($listData);
+                $endRow = $configExport['row']['row_end'];
                 foreach ($listData as $key => $value) {
                     if ($userName1 != $value['login']) {
                         $userName1 = $value['login'];
                         $starRow = $configExport['row']['row_start'];
                         //set active sheet
                         $objTpl->setActiveSheetIndexByName($userName1);
-                        $i = 0;
                     } else {
-                        //insert row
-                        $this->insertRow($objTpl, $value, $configExport, $starRow);
                         $starRow++;
                     }
-                    if ($configExport['cells']['delete_row']) {
-                        
-                    }
-                }
-                //remove row
-                $totalRemove = 31 - $endDayMonth;
-                if (count($totalRemove) > 0) {
-                    for($i = 0; $i < count($totalRemove); $i++) {
-                        $objTpl->getActiveSheet()->removeRow($endRow-$i);
-                    }
+                    $this->insertRow($objTpl, $value, $configExport, $starRow);
                 }
                 //save file excel
                 $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');
@@ -403,7 +406,9 @@ class FormExport extends Model {
         foreach ($value as $key1 => $value1) {
             $cell = Yii::$app->params['column_main'][$positionColumn] . $starRow;
             $positionColumn ++ ;
-            $objTpl->getActiveSheet()->setCellValue($cell, $value1);
+            if (!empty($value1)) {
+                $objTpl->getActiveSheet()->setCellValue($cell, $value1);
+            }
             $j++;
             if ($configExport['row']['total_column_export'] < $j) {
                 break;

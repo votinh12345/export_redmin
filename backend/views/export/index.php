@@ -75,7 +75,7 @@ $this->title = 'Export Excell';
                     <?php
                         $form = ActiveForm::begin([
                                     'action' => ['export/index/'],
-                                    'method' => 'get',
+                                    'method' => 'post',
                                     'options' => [
                                         'class' => 'form-horizontal custom-form'
                                     ]

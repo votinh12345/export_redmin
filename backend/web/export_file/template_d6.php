@@ -22,10 +22,11 @@ return [
         'row_start' => 8,
         'row_end' => 71,
         'delete_row' => true,
-        'total_column_export' => 41
+        'total_column_export' => 40
     ],
     'row_special' => [
         'positon_start' => 'E',
-        'row_start' => 76
+        'row_start' => 76,
+        'value' => ''
     ]
 ];

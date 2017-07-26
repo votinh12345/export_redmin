@@ -72,15 +72,13 @@ class ExportController extends Controller {
 
         $dataProvider = $modelFormExprort->getAllDataDetail();
         $listFileTemplate = $formModelTemplate->getListImageFiles(false);
-        
-        $param = $request->queryParams;
-        if (isset($param['view'])) {
-            $modelFormExprort->setAttributes($param['FormExport']);
-            $dataProvider = $modelFormExprort->getAllDataDetail(false);
-        } else if (isset($param['export'])) {
-            $modelFormExprort->setAttributes($param['FormExport']);
+        if ($request->isPost) {
+            $dataPost = $request->post();
+            $modelFormExprort->setAttributes($dataPost['FormExport']);
             $modelFormExprort->actionExportExcel();
+           
         }
+        
         return $this->render('index', [
                 'modelFormExprort' => $modelFormExprort,
                 'dataProvider' => $dataProvider,
