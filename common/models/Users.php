@@ -28,6 +28,8 @@ use Yii;
  */
 class Users extends \yii\db\ActiveRecord
 {
+    const STATUS_ACTIVE = 1;
+
     /**
      * @inheritdoc
      */

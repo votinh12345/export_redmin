@@ -27,5 +27,39 @@ return [
     'position_default' => 'DEV',
     'time_start_default' => '8:30',
     'time_end_default' => '17:30',
-    'folder_template' => 'export_file/'
+    'folder_template' => 'export_file/',
+    //config console
+    'project_id' => [1,4],
+    'report_config' => [
+        'error_spent_time' => [
+            'value' => 1,
+            'enable' => true,
+            'message' => 'Lỗi chưa log time dùng cho task'
+        ],
+        'error_description_bug' => [
+            'value' => 2,
+            'enable' => true,
+            'message' => 'Lỗi chưa nhập description'
+        ],
+        'error_due_date' => [
+            'value' => 3,
+            'enable' => true,
+            'message' => 'Lỗi chưa chuyển trạng thái sang kết thúc'
+        ],
+        'error_total_hours' => [
+            'value' => 4,
+            'enable' => true,
+            'message' => ''
+        ],
+        'error_other' => [
+            'value' => 5,
+            'enable' => true,
+            'message' => 'Tạo task other khi vẫn đang có task được giao chưa nhập'
+        ],
+        'error_start_date' => [
+            'value' => 6,
+            'enable' => true,
+            'message' => 'Lỗi chưa chuyển trạng thái tiếp nhận'
+        ],
+    ]
 ];

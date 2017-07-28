@@ -23,6 +23,7 @@ class Enumerations extends \yii\db\ActiveRecord
     const IS_ACTIVE = 1;
     const NOT_ACTIVE = 0;
     
+    const ENUMERATIONS_OTHER = 45;
 
     /**
      * @inheritdoc
