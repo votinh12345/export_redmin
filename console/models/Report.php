@@ -3,7 +3,7 @@
 namespace console\models;
 
 use Yii;
-use yii\db\ActiveRecord;
+use yii\helpers\Url;
 use common\models\Users;
 use common\models\Trackers;
 use common\models\IssueStatuses;
@@ -30,11 +30,14 @@ class Report extends \yii\db\ActiveRecord
     public function getAllDataReport() {
         $dataConfig = Yii::$app->params['report_config'];
         $listData = [];
+        $date = date('Y-m-d');
+        if (date("D", strtotime($date)) == 'Sun' || date("D", strtotime($date)) == 'Sat') {
+            return false;
+        }
         foreach ($dataConfig as $key => $value) {
             $typeError = $value['value'];
             if ($value['enable']) {
-                $lisDataError = $this->getData($typeError);
-                //var_dump($lisDataError);die;
+                $lisDataError = $this->getData($typeError, $date);
                 if (count($lisDataError) > 0) {
                     foreach ($lisDataError as $key1 => $value1) {
                         if ($typeError == 4) {
@@ -68,23 +71,41 @@ class Report extends \yii\db\ActiveRecord
                 }
             }
         }
-        var_dump($listData);die;
         //write file exel
         if (count($listData) > 0) {
-            $fileTemplate = Yii::$app->params['folderReport'] . 'report_day.xlsx';
+            $fileTemplate = Yii::$app->urlManagerBackend->baseUrl . '/' . Yii::$app->params['folderReport'] . 'report_day.xlsx';
             $fileNameCopy = 'report_day'. '_' . date('YmdHis');
-            $fileName = Yii::$app->params['folderReport'] . $fileNameCopy . '.xlsx';
+            $fileName = Yii::$app->urlManagerBackend->baseUrl . '/' . Yii::$app->params['folderReport'] . $fileNameCopy . '.xlsx';
             copy($fileTemplate, $fileName);
             $objPHPExcel = new \PHPExcel();
             $objTpl = PHPExcel_IOFactory::load($fileName);
-            $i = $j = 2;
+            $l= 2;
             $userName = '';
             foreach ($listData as $key => $value) {
                 if ($userName != $key) {
-                    $objTpl->getActiveSheet()->setCellValue('B'.$i, $key);
+                    $userName = $key;
+                    $objTpl->getActiveSheet()->setCellValue('B'.$l, $key);
+                    $l = $l + count($value);
+                    $k = 0;
+                }
+                foreach ($value as $key1 => $value1) {
+                    $row = $l + $k -count($value);
+                    $objTpl->getActiveSheet()->setCellValue('C'.$row, $value1['name_user']);
+                    $objTpl->getActiveSheet()->setCellValue('D'.$row, $value1['projects_name']);
+                    $objTpl->getActiveSheet()->setCellValue('E'.$row, $value1['id_issuse']);
+                    $objTpl->getActiveSheet()->setCellValue('F'.$row, $value1['subject_issuse']);
+                    $objTpl->getActiveSheet()->setCellValue('G'.$row, $value1['message']);
+                    $k ++;
                 }
             }
+            //save file excel
+            $objWriter = PHPExcel_IOFactory::createWriter($objTpl, 'Excel2007');
+            $objWriter->save($fileName);
+            unset($objWriter);
+            return $fileName;
         }
+        
+        return false;
     }
     
     /*
@@ -93,9 +114,7 @@ class Report extends \yii\db\ActiveRecord
      * Auth : HienNV6244
      * Created : 28-07-2017
      */
-    public function getData($typeError) {
-        $date = date('Y-m-d');
-            $date = date('2017-06-08');
+    public function getData($typeError, $date) {
         switch ($typeError) {
             case 1:
                 //query get all member for project
@@ -137,7 +156,6 @@ class Report extends \yii\db\ActiveRecord
                 break;
             case 3:
                 $date = date('Y-m-d', strtotime('-1 day'));
-                    $date = '2017-06-08';
                 $query = new \yii\db\Query();
                 $query->select(["users.login", "CONCAT(users.lastname,' ', users.firstname) AS full_name", "projects.name", "issues.id", "issues.subject"])
                         ->from('issues');
