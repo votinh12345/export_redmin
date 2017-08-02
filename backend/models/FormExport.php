@@ -117,6 +117,8 @@ class FormExport extends Model {
      */
 
     public function actionExportExcel() {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 30000); 
         $listData = $this->getAllDataDetail(false, false);
         if (count($listData) > 0) {
             //copy file or copy sheet
@@ -357,8 +359,6 @@ class FormExport extends Model {
                             $projectName = '';
                             //set active sheet
                             $objTpl->setActiveSheetIndexByName($userName2);
-                        } else {
-                            $starDataRowSpecial ++;
                         }
                         //insert project
                         if ($projectName != $value['name']) {

@@ -29,7 +29,7 @@ return [
     'time_end_default' => '17:30',
     'folder_template' => 'export_file/',
     //config console
-    'project_id' => [1,4],
+    'project_id' => [2,3,4,6,40],
     'report_config' => [
         'error_spent_time' => [
             'value' => 1,

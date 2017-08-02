@@ -1,6 +1,7 @@
 <?php
 return [
     'adminEmail' => 'admin@example.com',
-    'mailTo' => 'nguyenvanhienbk2006@gmail.com',
-    'subject' => 'Mail report daily'
+    'mailTo' => 'tuan.do@co-well.vn',
+    'mailCC' => 'nhungnt6792@co-well.com.vn',
+    'subject' => 'D5 Daily Redmine Report'
 ];

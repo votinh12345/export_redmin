@@ -75,8 +75,11 @@ class ExportController extends Controller {
         if ($request->isPost) {
             $dataPost = $request->post();
             $modelFormExprort->setAttributes($dataPost['FormExport']);
-            $modelFormExprort->actionExportExcel();
-           
+            if (!empty($dataPost['export'])) {
+                $modelFormExprort->actionExportExcel();
+            } elseif (!empty($dataPost['view'])) {
+                $dataProvider = $modelFormExprort->getAllDataDetail();
+            }
         }
         
         return $this->render('index', [

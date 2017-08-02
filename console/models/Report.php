@@ -31,6 +31,7 @@ class Report extends \yii\db\ActiveRecord
         $dataConfig = Yii::$app->params['report_config'];
         $listData = [];
         $date = date('Y-m-d');
+        $date = '2017-08-01';
         if (date("D", strtotime($date)) == 'Sun' || date("D", strtotime($date)) == 'Sat') {
             return false;
         }
@@ -45,6 +46,8 @@ class Report extends \yii\db\ActiveRecord
                                 $message = 'Chưa nhập công số ngày '. date('d-m-Y');
                             } elseif ($value1['sum_hours'] < 8) {
                                 $message = 'Nhập thiếu '. (8 - $value1['sum_hours']) .' giờ cho ngày '. date('d-m-Y');
+                            } else {
+                                continue;
                             }
                         } else {
                             $message = $value['message'];
@@ -58,6 +61,8 @@ class Report extends \yii\db\ActiveRecord
                                     'subject_issuse' => (!empty($value1['subject'])) ? $value1['subject'] : '',
                                     'message' => $message
                                 ];
+                            } else {
+                                continue;
                             }
                         }
                         $listData[$value1['login']][] = [

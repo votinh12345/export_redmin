@@ -20,7 +20,8 @@ class ReportController extends \yii\console\Controller {
             $message = Yii::$app->mailer->compose(['text' => 'mail_report'], [])
                     ->setFrom(Yii::$app->params['adminEmail'])
                     ->setTo(Yii::$app->params['mailTo'])
-                    ->setSubject(Yii::$app->params['subject']);
+                    ->setCc(array(Yii::$app->params['mailCC']))
+                    ->setSubject(date('d/m/Y') .' '. Yii::$app->params['subject']);
             $message->attach($file);
             $message->send();
             return true;
