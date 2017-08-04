@@ -29,6 +29,8 @@ use Yii;
 class Users extends \yii\db\ActiveRecord
 {
     const STATUS_ACTIVE = 1;
+    const NOT_ADMIN = 0;
+    const ADMIN = 1;
 
     /**
      * @inheritdoc

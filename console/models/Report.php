@@ -30,10 +30,12 @@ class Report extends \yii\db\ActiveRecord
     public function getAllDataReport() {
         $dataConfig = Yii::$app->params['report_config'];
         $listData = [];
-        $date = date('Y-m-d');
-        $date = '2017-08-01';
-        if (date("D", strtotime($date)) == 'Sun' || date("D", strtotime($date)) == 'Sat') {
+        if (date("D", strtotime(date('Y-m-d'))) == 'Sun' || date("D", strtotime(date('Y-m-d'))) == 'Sat') {
             return false;
+        }
+        $date = date('Y-m-d', strtotime('-1 day'));
+        if (date("D", strtotime(date('Y-m-d'))) == 'Mon') {
+            $date = date('Y-m-d', strtotime('-2 day'));
         }
         foreach ($dataConfig as $key => $value) {
             $typeError = $value['value'];
@@ -43,9 +45,9 @@ class Report extends \yii\db\ActiveRecord
                     foreach ($lisDataError as $key1 => $value1) {
                         if ($typeError == 4) {
                             if ($value1['sum_hours'] == 0 || $value1['sum_hours'] == NULL) {
-                                $message = 'Chưa nhập công số ngày '. date('d-m-Y');
+                                $message = 'Chưa nhập công số ngày '. $date;
                             } elseif ($value1['sum_hours'] < 8) {
-                                $message = 'Nhập thiếu '. (8 - $value1['sum_hours']) .' giờ cho ngày '. date('d-m-Y');
+                                $message = 'Nhập thiếu '. (8 - $value1['sum_hours']) .' giờ cho ngày '. $date;
                             } else {
                                 continue;
                             }
@@ -136,9 +138,10 @@ class Report extends \yii\db\ActiveRecord
                 $query->innerJoin('issues', 'issues.id = time_entries.issue_id');
                 $query->innerJoin('projects', 'projects.id = time_entries.project_id');
                 $query->innerJoin('journals', 'journals.journalized_id = issues.id');
-                $query->innerJoin('users', 'users.id = journals.user_id');
+                $query->innerJoin('users', 'users.id = journals.user_id AND users.status = ' . Users::STATUS_ACTIVE);
                 $query->innerJoin('journal_details', 'journals.journalized_id = journal_details.id AND journal_details.prop_key = "status_id" AND (journal_details.value = ' . IssueStatuses::ISSUE_STATUS_RESOLVED . ' OR journal_details.value = '. IssueStatuses::ISSUE_STATUS_CLOSED . ')');
                 $query->where(['IN', 'time_entries.issue_id', $subquery]);
+                $query->andWhere(['IN', 'issues.project_id', Yii::$app->params['project_id']]);
                 $query->groupBy(['time_entries.issue_id']);
                 $query->orderBy(['journals.id' => SORT_DESC]);
                 return $query->all();
@@ -147,7 +150,7 @@ class Report extends \yii\db\ActiveRecord
                 $query = new \yii\db\Query();
                 $query->select(["users.login", "CONCAT(users.lastname,' ', users.firstname) AS full_name", "projects.name", "issues.id", "issues.subject"])
                         ->from('issues');
-                $query->innerJoin('users', 'issues.author_id = users.id');
+                $query->innerJoin('users', 'issues.author_id = users.id AND users.status = ' . Users::STATUS_ACTIVE);
                 $query->innerJoin('projects', 'projects.id = issues.project_id = projects.id');
                 $query->where(['IN', 'issues.project_id', Yii::$app->params['project_id']]);
                 $query->andWhere(['=' , 'DATE_FORMAT(issues.created_on,"%Y-%m-%d")', "'" . $date . "'"]);
@@ -160,14 +163,17 @@ class Report extends \yii\db\ActiveRecord
                 return $query->all();
                 break;
             case 3:
-                $date = date('Y-m-d', strtotime('-1 day'));
+                $date = date('Y-m-d', strtotime('-2 day'));
+                if (date("D", strtotime(date('Y-m-d'))) == 'Mon') {
+                    $date = date('Y-m-d', strtotime('-3 day'));
+                }
                 $query = new \yii\db\Query();
                 $query->select(["users.login", "CONCAT(users.lastname,' ', users.firstname) AS full_name", "projects.name", "issues.id", "issues.subject"])
                         ->from('issues');
-                $query->innerJoin('users', 'issues.author_id = users.id');
+                $query->innerJoin('users', 'issues.author_id = users.id AND users.status = ' . Users::STATUS_ACTIVE);
                 $query->innerJoin('projects', 'projects.id = issues.project_id = projects.id');
                 $query->where(['IN', 'issues.project_id', Yii::$app->params['project_id']]);
-                $query->andWhere(['=' , 'DATE_FORMAT(issues.due_date,"%Y-%m-%d")', $date]);
+                $query->andWhere(['<' , 'DATE_FORMAT(issues.due_date,"%Y-%m-%d")', $date]);
                 $query->andWhere(['NOT IN' , 'issues.status_id', [IssueStatuses::ISSUE_STATUS_RESOLVED, IssueStatuses::ISSUE_STATUS_CLOSED]]);
                 return $query->all();
                 break;
@@ -176,7 +182,7 @@ class Report extends \yii\db\ActiveRecord
                 $subquery = new \yii\db\Query();
                 $subquery->select(["members.user_id"])
                         ->from('members');
-                $subquery->innerJoin('users', 'members.user_id = users.id');
+                $subquery->innerJoin('users', 'members.user_id = users.id AND users.admin = '. Users::NOT_ADMIN . ' AND users.status = ' . Users::STATUS_ACTIVE);
                 $subquery->where(['IN', 'members.project_id', Yii::$app->params['project_id']]);
                 $subquery->andWhere(['=', 'users.status', Users::STATUS_ACTIVE]);
                 $subquery->groupBy(['members.user_id']);
@@ -205,11 +211,12 @@ class Report extends \yii\db\ActiveRecord
                 
                 //get data
                 $query = new \yii\db\Query();
-                $query->select(["users.login", "CONCAT(users.lastname,' ', users.firstname) AS full_name", "projects.name", "issues.id", "issues.subject"])
+                $query->select(["users.login", "CONCAT(users.lastname,' ', users.firstname) AS full_name", "projects.name", "GROUP_CONCAT(issues_progress.id ORDER BY users.login separator ' ') AS id", "CONCAT(issues.id,'_', issues.subject) AS subject"])
                         ->from('time_entries');
-                $query->innerJoin('users', 'users.id = time_entries.user_id');
+                $query->innerJoin('users', 'users.id = time_entries.user_id AND users.status = '. Users::STATUS_ACTIVE);
                 $query->innerJoin('projects', 'projects.id = time_entries.project_id');
                 $query->innerJoin('issues', 'issues.id = time_entries.issue_id');
+                $query->innerJoin('issues AS issues_progress', 'issues_progress.assigned_to_id = users.id AND issues_progress.status_id = ' . IssueStatuses::ISSUE_STATUS_IN_PROGRESS);
                 $query->where(['=', 'time_entries.activity_id', Enumerations::ENUMERATIONS_OTHER]);
                 $query->andWhere(['IN', 'time_entries.user_id', $subquery]);
                 $query->andWhere(['=', 'time_entries.spent_on', $date]);
@@ -219,7 +226,7 @@ class Report extends \yii\db\ActiveRecord
                 $query = new \yii\db\Query();
                 $query->select(["users.login", "CONCAT(users.lastname,' ', users.firstname) AS full_name", "projects.name", "issues.id", "issues.subject"])
                         ->from('issues');
-                $query->innerJoin('users', 'issues.author_id = users.id');
+            $query->innerJoin('users', 'issues.author_id = users.id AND users.status = ' . Users::STATUS_ACTIVE);
                 $query->innerJoin('projects', 'projects.id = issues.project_id = projects.id');
                 $query->where(['IN', 'issues.project_id', Yii::$app->params['project_id']]);
                 $query->andWhere(['=' , 'DATE_FORMAT(issues.start_date,"%Y-%m-%d")', $date]);
